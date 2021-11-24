@@ -1,0 +1,23 @@
+[package]
+name = "expander-rs"
+version = "0.3.0"
+authors = ["Gokberk Kocak"]
+edition = "2018"
+
+[dependencies]
+anyhow = "1.0"
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+structopt = "0.3"
+# cheap hashes for small vec<u8>
+fnv = "1.0"
+# cheap alloc
+# heap security can be disabled since it's an internal program.
+mimalloc = { version = "0.1", default-features = false, optional = true }
+# optional bitvec usage
+bit-vec = {version = "0.6", optional = true}
+
+
+[features]
+bitvec = ["bit-vec"]
+cheap-alloc = ["mimalloc"]
