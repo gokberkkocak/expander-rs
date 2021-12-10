@@ -14,10 +14,9 @@ fnv = "1.0"
 # cheap alloc
 # heap security can be disabled since it's an internal program.
 mimalloc = { version = "0.1", default-features = false, optional = true }
-# optional bitvec usage
-bit-vec = {version = "0.6", optional = true}
+# bitvec crate for bigger bitvecs
+bit-vec = "0.6"
 
 
 [features]
-bitvec = ["bit-vec"]
 cheap-alloc = ["mimalloc"]
