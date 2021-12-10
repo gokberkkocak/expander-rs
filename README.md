@@ -15,6 +15,7 @@ cargo build --release --features cheap-alloc
 ```
 
 ## Usage
+There are 3 different expanders. To use them, use the flags given. The program defaults to hashonly expander.
 
 ```
 expander-rust 0.4.0
