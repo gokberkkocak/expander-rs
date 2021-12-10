@@ -2,7 +2,7 @@ use fnv::FnvHashSet;
 
 use crate::JsonSet;
 
-pub(crate) trait Exploder {
+pub(crate) trait Expander {
     type SolutionType;
     type HashType;
     fn explode(parsed_set: Vec<JsonSet>) -> FnvHashSet<Self::HashType>;

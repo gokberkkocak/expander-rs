@@ -1,4 +1,4 @@
-use crate::exploder::Exploder;
+use crate::expander::Expander;
 
 use bit_vec::BitVec;
 use fnv::FnvHashSet;
@@ -13,9 +13,9 @@ fn convert_itemset(itemset: &[u8]) -> BitVec {
     bv
 }
 #[derive(Default)]
-pub struct BitVecExploder;
+pub struct BitVecExpander;
 
-impl Exploder for BitVecExploder {
+impl Expander for BitVecExpander {
     type SolutionType = Vec<u8>;
 
     type HashType = BitVec;
@@ -60,7 +60,7 @@ mod tests {
                 set: vec![4, 5, 6],
             },
         ];
-        assert_eq!(BitVecExploder::explode(parsed_set).len(), 14);
+        assert_eq!(BitVecExpander::explode(parsed_set).len(), 14);
     }
 
     #[test]
@@ -73,6 +73,6 @@ mod tests {
                 set: vec![60, 99],
             },
         ];
-        assert_eq!(BitVecExploder::explode(parsed_set).len(), 17);
+        assert_eq!(BitVecExpander::explode(parsed_set).len(), 17);
     }
 }

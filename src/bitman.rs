@@ -1,10 +1,10 @@
 use fnv::FnvHashSet;
 
-use crate::exploder::Exploder;
+use crate::expander::Expander;
 
-pub(crate) struct BitManipulatorExploder;
+pub(crate) struct BitManipulatorExpander;
 
-impl Exploder for BitManipulatorExploder {
+impl Expander for BitManipulatorExpander {
     type SolutionType = u128;
 
     type HashType = u128;
@@ -58,7 +58,7 @@ mod tests {
             crate::JsonSet { set: vec![1, 2, 3] },
             crate::JsonSet { set: vec![4, 5, 6] },
         ];
-        assert_eq!(BitManipulatorExploder::explode(parsed_set).len(), 14);
+        assert_eq!(BitManipulatorExpander::explode(parsed_set).len(), 14);
     }
 
     #[test]
@@ -71,6 +71,6 @@ mod tests {
                 set: vec![60, 99],
             },
         ];
-        assert_eq!(BitManipulatorExploder::explode(parsed_set).len(), 17);
+        assert_eq!(BitManipulatorExpander::explode(parsed_set).len(), 17);
     }
 }

@@ -2,12 +2,12 @@ use std::hash::{Hash, Hasher};
 
 use fnv::{FnvHasher, FnvHashSet};
 
-use crate::exploder::Exploder;
+use crate::expander::Expander;
 #[derive(Default)]
-pub struct HashOnlyExploder;
+pub struct HashOnlyExpander;
 
 
-impl Exploder for HashOnlyExploder {
+impl Expander for HashOnlyExpander {
     type SolutionType = Vec<u8>;
 
     type HashType = u64;
@@ -56,7 +56,7 @@ mod tests {
                 set: vec![4, 5, 6],
             },
         ];
-        assert_eq!(HashOnlyExploder::explode(parsed_set).len(), 14);
+        assert_eq!(HashOnlyExpander::explode(parsed_set).len(), 14);
     }
 
     #[test]
@@ -69,6 +69,6 @@ mod tests {
                 set: vec![60, 99],
             },
         ];
-        assert_eq!(HashOnlyExploder::explode(parsed_set).len(), 17);
+        assert_eq!(HashOnlyExpander::explode(parsed_set).len(), 17);
     }
 }

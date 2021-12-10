@@ -1,13 +1,13 @@
 mod bitman;
 mod bitvec;
-mod exploder;
+mod expander;
 mod hashonly;
 
 use anyhow::Result;
-use bitman::BitManipulatorExploder;
-use bitvec::BitVecExploder;
-use exploder::Exploder;
-use hashonly::HashOnlyExploder;
+use bitman::BitManipulatorExpander;
+use bitvec::BitVecExpander;
+use expander::Expander;
+use hashonly::HashOnlyExpander;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::{BufReader, Read};
@@ -32,7 +32,7 @@ struct Opt {
     /// Input file in JSON format
     #[structopt(parse(from_os_str))]
     input: PathBuf,
-    /// Use hash-only expander (default)
+    /// Use Hash-only expander (default)
     #[structopt(
         short = "h",
         long = "hashonly",
@@ -40,7 +40,7 @@ struct Opt {
         conflicts_with = "bitman"
     )]
     hashonly: bool,
-    /// Use bit-man exploder
+    /// Use Bit Manipulator expander
     #[structopt(
         short = "b",
         long = "bitman",
@@ -48,7 +48,7 @@ struct Opt {
         conflicts_with = "bitvec"
     )]
     bitman: bool,
-    /// Use Bitvec exploder
+    /// Use Bitvec expander
     #[structopt(
         short = "v",
         long = "bitvec",
@@ -76,10 +76,10 @@ fn main() -> Result<()> {
 
 fn work(opt: &Opt, parsed_set: Vec<JsonSet>) {
     let len = match (opt.hashonly, opt.bitvec, opt.bitman) {
-        (_, false, false) => HashOnlyExploder::explode(parsed_set).len(),
-        (false, true, false) => BitVecExploder::explode(parsed_set).len(),
-        (false, false, true) => BitManipulatorExploder::explode(parsed_set).len(),
+        (_, false, false) => HashOnlyExpander::explode(parsed_set).len(),
+        (false, true, false) => BitVecExpander::explode(parsed_set).len(),
+        (false, false, true) => BitManipulatorExpander::explode(parsed_set).len(),
         _ => unreachable!(),
     };
-    println!("Exploder result: {}", len);
+    println!("Total nb of item-sets: {}", len);
 }

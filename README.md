@@ -8,24 +8,27 @@ Experiment database maintenance tool.
 cargo build --release
 ```
 
-Optional compilation features are __bitvec__ and __cheap-alloc__
+There is an optional compilation feature which uses mimalloc: __cheap-alloc__
 
 ```
-cargo build --release --features bitvec cheap-alloc
+cargo build --release --features cheap-alloc
 ```
 
 ## Usage
 
 ```
-expander-rust 0.3.0
-Closed/Maximal Itemset Expander with only storing hashes.
+expander-rust 0.4.0
+Closed/Maximal Itemset Expander
 
 USAGE:
-    expander-rs <input>
+    expander-rs [FLAGS] <input>
 
 FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+    -b, --bitman      Use Bit Manipulator expander
+    -v, --bitvec      Use Bitvec expander
+    -h, --hashonly    Use Hash-only expander (default)
+        --help        Prints help information
+    -V, --version     Prints version information
 
 ARGS:
     <input>    Input file in JSON format
