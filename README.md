@@ -1,4 +1,4 @@
-# Expander-rust [![Build/Test](https://github.com/gokberkkocak/expander-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/gokberkkocak/expander-rs/actions/workflows/ci.yml)
+# expander-rs [![Build/Test](https://github.com/gokberkkocak/expander-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/gokberkkocak/expander-rs/actions/workflows/ci.yml)
 
 Experiment database maintenance tool.
 
@@ -8,24 +8,28 @@ Experiment database maintenance tool.
 cargo build --release
 ```
 
-Optional compilation features are __bitvec__ and __cheap-alloc__
+There is an optional compilation feature which uses mimalloc: __cheap-alloc__
 
 ```
-cargo build --release --features bitvec cheap-alloc
+cargo build --release --features cheap-alloc
 ```
 
 ## Usage
+There are 3 different expanders. To use them, use the flags given. The program defaults to hashonly expander.
 
 ```
-expander-rust 0.3.0
-Closed/Maximal Itemset Expander with only storing hashes.
+expander-rust 0.4.0
+Closed/Maximal Itemset Expander
 
 USAGE:
-    expander-rs <input>
+    expander-rs [FLAGS] <input>
 
 FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+    -b, --bitman      Use Bit Manipulator expander
+    -v, --bitvec      Use Bitvec expander
+    -h, --hashonly    Use Hash-only expander (default)
+        --help        Prints help information
+    -V, --version     Prints version information
 
 ARGS:
     <input>    Input file in JSON format
