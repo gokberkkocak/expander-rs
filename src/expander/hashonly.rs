@@ -29,7 +29,7 @@ impl Expander for HashOnlyExpander {
             for i in 0..length {
                 let el = solution.remove(i);
                 let mut hasher = FnvHasher::default();
-                Hash::hash_slice(&solution, &mut hasher);
+                Hash::hash_slice(solution, &mut hasher);
                 if !final_set.contains(&hasher.finish()) {
                     Self::expand_one_solution_to_lower_level(solution, final_set);
                 }
@@ -37,7 +37,7 @@ impl Expander for HashOnlyExpander {
             }
         }
         let mut hasher = FnvHasher::default();
-        Hash::hash_slice(&solution, &mut hasher);
+        Hash::hash_slice(solution, &mut hasher);
         final_set.insert(hasher.finish());
     }
 

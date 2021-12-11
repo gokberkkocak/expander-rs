@@ -5,7 +5,7 @@ use crate::{expander::Expander, JsonSet};
 fn convert_itemset(sol: &[u8]) -> u128 {
     let mut sol_u64 = 0;
     for i in sol {
-        sol_u64 = sol_u64 | (1 << ((i - 1) as u64));
+        sol_u64 |= 1 << ((i - 1) as u64);
     }
     sol_u64
 }

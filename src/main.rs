@@ -22,7 +22,7 @@ struct JsonSet {
     set: Vec<u8>,
 }
 
-const ABOUT: &'static str = "Closed/Maximal Itemset Expander";
+const ABOUT: &str = "Closed/Maximal Itemset Expander";
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "expander-rust", about = ABOUT)]

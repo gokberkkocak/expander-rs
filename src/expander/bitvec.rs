@@ -40,7 +40,7 @@ impl Expander for BitVecExpander {
             for i in 0..solution.len() {
                 if solution[i] {
                     solution.set(i, false);
-                    if !final_set.contains(&solution) {
+                    if !final_set.contains(solution) {
                         Self::expand_one_solution_to_lower_level(solution, final_set);
                     }
                     solution.set(i, true);
