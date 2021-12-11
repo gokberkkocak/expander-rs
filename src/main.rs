@@ -1,13 +1,11 @@
-mod bitman;
-mod bitvec;
 mod expander;
-mod hashonly;
+
+use crate::expander::Expander;
+use crate::expander::hashonly::HashOnlyExpander;
+use crate::expander::bitvec::BitVecExpander;
+use crate::expander::bitman::BitManipulatorExpander;
 
 use anyhow::Result;
-use bitman::BitManipulatorExpander;
-use bitvec::BitVecExpander;
-use expander::Expander;
-use hashonly::HashOnlyExpander;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::{BufReader, Read};
@@ -76,9 +74,9 @@ fn main() -> Result<()> {
 
 fn work(opt: &Opt, parsed_set: Vec<JsonSet>) {
     let len = match (opt.hashonly, opt.bitvec, opt.bitman) {
-        (_, false, false) => HashOnlyExpander::explode(parsed_set).len(),
-        (false, true, false) => BitVecExpander::explode(parsed_set).len(),
-        (false, false, true) => BitManipulatorExpander::explode(parsed_set).len(),
+        (_, false, false) => HashOnlyExpander::expand(parsed_set).len(),
+        (false, true, false) => BitVecExpander::expand(parsed_set).len(),
+        (false, false, true) => BitManipulatorExpander::expand(parsed_set).len(),
         _ => unreachable!(),
     };
     println!("Total nb of item-sets: {}", len);
