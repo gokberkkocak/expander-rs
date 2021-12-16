@@ -1,15 +1,16 @@
 use crate::{expander::Expander, JsonSet};
 
-use bit_vec::BitVec;
+use bitvec::vec::BitVec;
 use fnv::FnvHashSet;
 
 const NB_BITS: u8 = 100;
 
 fn convert_itemset(itemset: &[u8]) -> BitVec {
-    let mut bv = BitVec::from_elem(NB_BITS.into(), false);
-    for i in itemset {
-        bv.set((*i).into(), true);
-    }
+    let mut bv = BitVec::with_capacity(NB_BITS.into());
+    (0..NB_BITS).for_each(|i| match itemset.iter().find(|&&x| x == i) {
+        Some(_) => bv.push(true),
+        None => bv.push(false),
+    });
     bv
 }
 pub(crate) struct BitVecExpander;
@@ -35,7 +36,7 @@ impl Expander for BitVecExpander {
         solution: &mut Self::SolutionType,
         final_set: &mut FnvHashSet<Self::HashType>,
     ) {
-        let ones_length = solution.iter().filter(|&x| x).count();
+        let ones_length = solution.iter().filter(|x| **x).count();
         if ones_length > 1 {
             for i in 0..solution.len() {
                 if solution[i] {
@@ -49,8 +50,6 @@ impl Expander for BitVecExpander {
         }
         final_set.insert(solution.clone());
     }
-
-
 }
 
 #[cfg(test)]

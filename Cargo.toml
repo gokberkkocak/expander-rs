@@ -14,8 +14,8 @@ fnv = "1.0"
 # cheap alloc
 # heap security can be disabled since it's an internal program.
 mimalloc = { version = "0.1", default-features = false, optional = true }
-# bitvec crate for advance bitvec operations
-bit-vec = "0.6"
+# bitvec crate for efficient bitvec memory representation
+bitvec = "0.22"
 
 
 [features]
