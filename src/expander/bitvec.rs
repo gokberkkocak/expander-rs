@@ -21,8 +21,7 @@ where
     T: Default,
     T: IntoIterator,
     T::Item: Into<BitVec>,
-    T: crate::expander::Insert<BitVec>,
-    T: crate::expander::Contains<BitVec>,
+    T: crate::expander::SetLike<BitVec>,
 {
     type SolutionType = BitVec;
 
@@ -46,14 +45,14 @@ where
             for i in 0..solution.len() {
                 if solution[i] {
                     solution.set(i, false);
-                    if !final_set.contains_(solution) {
+                    if !final_set.set_contains(solution) {
                         Self::expand_one_solution_to_lower_level(solution, final_set);
                     }
                     solution.set(i, true);
                 }
             }
         }
-        final_set.insert_(solution.clone());
+        final_set.set_insert(solution.clone());
     }
 }
 

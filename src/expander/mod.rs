@@ -16,8 +16,7 @@ where
     T: Default,
     T: IntoIterator,
     T::Item: Into<Self::HashType>,
-    T: Insert<Self::HashType>,
-    T: Contains<Self::HashType>,
+    T: SetLike<Self::HashType>,
 {
     type SolutionType;
     type HashType;
@@ -25,49 +24,35 @@ where
     fn expand_one_solution_to_lower_level(solution: &mut Self::SolutionType, final_set: &mut T);
 }
 
-pub(crate) trait Insert<T>
+pub(crate) trait SetLike<T>
 where
     T: Eq,
     T: Hash,
 {
-    fn insert_(&mut self, item: T);
+    fn set_insert(&mut self, item: T);
+    fn set_contains(&self, item: &T) -> bool;
 }
 
-pub(crate) trait Contains<T>
-where
-    T: Eq,
-    T: Hash,
-{
-    fn contains_(&self, item: &T) -> bool;
-}
-
-macro_rules! impl_insert_and_contains {
+macro_rules! impl_setlike {
     ($t:ident) => {
-        impl<T> Insert<T> for $t<T>
+        impl<T> SetLike<T> for $t<T>
         where
             T: Eq,
             T: Hash,
         {
             #[inline]
-            fn insert_(&mut self, item: T) {
+            fn set_insert(&mut self, item: T) {
                 self.insert(item);
             }
-        }
-
-        impl<T> Contains<T> for $t<T>
-        where
-            T: Eq,
-            T: Hash,
-        {
             #[inline]
-            fn contains_(&self, item: &T) -> bool {
+            fn set_contains(&self, item: &T) -> bool {
                 self.contains(item)
             }
         }
     };
 }
 
-impl_insert_and_contains!(HashSet);
-impl_insert_and_contains!(FxHashSet);
-impl_insert_and_contains!(FnvHashSet);
-impl_insert_and_contains!(AHashSet);
+impl_setlike!(HashSet);
+impl_setlike!(FxHashSet);
+impl_setlike!(FnvHashSet);
+impl_setlike!(AHashSet);

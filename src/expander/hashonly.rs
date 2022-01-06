@@ -13,8 +13,7 @@ where
     T: Default,
     T: IntoIterator,
     T::Item: Into<u64>,
-    T: crate::expander::Insert<u64>,
-    T: crate::expander::Contains<u64>,
+    T: crate::expander::SetLike<u64>,
     S: Hasher,
     S: Default,
 {
@@ -37,7 +36,7 @@ where
                 let el = solution.remove(i);
                 let mut hasher = S::default();
                 Hash::hash_slice(solution, &mut hasher);
-                if !final_set.contains_(&hasher.finish()) {
+                if !final_set.set_contains(&hasher.finish()) {
                     Self::expand_one_solution_to_lower_level(solution, final_set);
                 }
                 solution.insert(i, el);
@@ -45,7 +44,7 @@ where
         }
         let mut hasher = S::default();
         Hash::hash_slice(solution, &mut hasher);
-        final_set.insert_(hasher.finish());
+        final_set.set_insert(hasher.finish());
     }
 }
 

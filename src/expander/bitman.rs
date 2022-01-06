@@ -17,8 +17,7 @@ where
     T: Default,
     T: IntoIterator,
     T::Item: Into<u128>,
-    T: crate::expander::Insert<u128>,
-    T: crate::expander::Contains<u128>,
+    T: crate::expander::SetLike<u128>,
 {
     type SolutionType = u128;
 
@@ -42,13 +41,13 @@ where
             for i in 0..u128::BITS {
                 if (*solution & (1 << i)) >> i == 1 {
                     let mut new_sol = *solution ^ (1 << i);
-                    if !final_set.contains_(&new_sol) {
+                    if !final_set.set_contains(&new_sol) {
                         Self::expand_one_solution_to_lower_level(&mut new_sol, final_set);
                     }
                 }
             }
         }
-        final_set.insert_(*solution);
+        final_set.set_insert(*solution);
     }
 }
 
