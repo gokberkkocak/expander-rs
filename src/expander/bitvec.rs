@@ -1,7 +1,6 @@
 use crate::{expander::Expander, JsonSet};
 
 use bitvec::vec::BitVec;
-use fnv::FnvHashSet;
 
 const NB_BITS: u8 = 100;
 
@@ -13,15 +12,23 @@ fn convert_itemset(itemset: &[u8]) -> BitVec {
     });
     bv
 }
-pub(crate) struct BitVecExpander;
+pub(crate) struct BitVecExpander<T> {
+    _phantom: std::marker::PhantomData<T>,
+}
 
-impl Expander for BitVecExpander {
+impl<T> Expander<T> for BitVecExpander<T>
+where
+    T: Default,
+    T: IntoIterator,
+    T::Item: Into<BitVec>,
+    T: crate::expander::SetLike<BitVec>,
+{
     type SolutionType = BitVec;
 
     type HashType = BitVec;
 
-    fn expand(parsed_set: Vec<JsonSet>) -> FnvHashSet<Self::HashType> {
-        let mut final_set = FnvHashSet::default();
+    fn expand(parsed_set: Vec<JsonSet>) -> T {
+        let mut final_set = T::default();
         let parsed_set = parsed_set
             .iter()
             .map(|x| convert_itemset(&x.set))
@@ -32,47 +39,131 @@ impl Expander for BitVecExpander {
         final_set
     }
 
-    fn expand_one_solution_to_lower_level(
-        solution: &mut Self::SolutionType,
-        final_set: &mut FnvHashSet<Self::HashType>,
-    ) {
+    fn expand_one_solution_to_lower_level(solution: &mut Self::SolutionType, final_set: &mut T) {
         let ones_length = solution.iter().filter(|x| **x).count();
         if ones_length > 1 {
             for i in 0..solution.len() {
                 if solution[i] {
                     solution.set(i, false);
-                    if !final_set.contains(solution) {
+                    if !final_set.set_contains(solution) {
                         Self::expand_one_solution_to_lower_level(solution, final_set);
                     }
                     solution.set(i, true);
                 }
             }
         }
-        final_set.insert(solution.clone());
+        final_set.set_insert(solution.clone());
     }
 }
 
 #[cfg(test)]
 mod tests {
 
+    use std::collections::HashSet;
+
+    use ahash::AHashSet;
+    use fnv::FnvHashSet;
+    use fxhash::FxHashSet;
+
     use super::*;
     #[test]
-    fn test_1() {
+    fn test_1_fnv() {
         let parsed_set = vec![
             JsonSet { set: vec![1, 2, 3] },
             JsonSet { set: vec![4, 5, 6] },
         ];
-        assert_eq!(BitVecExpander::expand(parsed_set).len(), 14);
+        assert_eq!(
+            BitVecExpander::<FnvHashSet<BitVec>>::expand(parsed_set).len(),
+            14
+        );
     }
 
     #[test]
-    fn test_2() {
+    fn test_2_fnv() {
         let parsed_set = vec![
             JsonSet {
                 set: vec![57, 58, 59, 60],
             },
             JsonSet { set: vec![60, 99] },
         ];
-        assert_eq!(BitVecExpander::expand(parsed_set).len(), 17);
+        assert_eq!(
+            BitVecExpander::<FnvHashSet<BitVec>>::expand(parsed_set).len(),
+            17
+        );
+    }
+
+    #[test]
+    fn test_1_fx() {
+        let parsed_set = vec![
+            JsonSet { set: vec![1, 2, 3] },
+            JsonSet { set: vec![4, 5, 6] },
+        ];
+        assert_eq!(
+            BitVecExpander::<FxHashSet<BitVec>>::expand(parsed_set).len(),
+            14
+        );
+    }
+    #[test]
+    fn test_2_fx() {
+        let parsed_set = vec![
+            JsonSet {
+                set: vec![57, 58, 59, 60],
+            },
+            JsonSet { set: vec![60, 99] },
+        ];
+        assert_eq!(
+            BitVecExpander::<FxHashSet<BitVec>>::expand(parsed_set).len(),
+            17
+        );
+    }
+
+    #[test]
+    fn test_1_std() {
+        let parsed_set = vec![
+            JsonSet { set: vec![1, 2, 3] },
+            JsonSet { set: vec![4, 5, 6] },
+        ];
+        assert_eq!(
+            BitVecExpander::<HashSet<BitVec>>::expand(parsed_set).len(),
+            14
+        );
+    }
+    #[test]
+    fn test_2_std() {
+        let parsed_set = vec![
+            JsonSet {
+                set: vec![57, 58, 59, 60],
+            },
+            JsonSet { set: vec![60, 99] },
+        ];
+        assert_eq!(
+            BitVecExpander::<HashSet<BitVec>>::expand(parsed_set).len(),
+            17
+        );
+    }
+
+    #[test]
+    fn test_1_ahash() {
+        let parsed_set = vec![
+            JsonSet { set: vec![1, 2, 3] },
+            JsonSet { set: vec![4, 5, 6] },
+        ];
+        assert_eq!(
+            BitVecExpander::<AHashSet<BitVec>>::expand(parsed_set).len(),
+            14
+        );
+    }
+    #[test]
+    fn test_2_ahash() {
+        let parsed_set = vec![
+            JsonSet {
+                set: vec![57, 58, 59, 60],
+            },
+            JsonSet { set: vec![60, 99] },
+        ];
+        assert_eq!(
+            BitVecExpander::<AHashSet<BitVec>>::expand(parsed_set).len(),
+            17
+        );
     }
 }

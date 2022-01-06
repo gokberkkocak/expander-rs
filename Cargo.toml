@@ -1,6 +1,6 @@
 [package]
 name = "expander-rs"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["Gokberk Kocak"]
 edition = "2021"
 
@@ -9,14 +9,22 @@ anyhow = "1.0"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 structopt = "0.3"
-# cheap hashes for like vec<u8>
+# cheap hash for like vec<u8>
 fnv = "1.0"
+# very cheap hash for very small stuff like bytes.
+fxhash = "0.2"
+# aes hashing
+ahash = "0.7"
 # cheap alloc
 # heap security can be disabled since it's an internal program.
 mimalloc = { version = "0.1", default-features = false, optional = true }
 # bitvec crate for efficient bitvec memory representation
 bitvec = "0.22"
 
-
 [features]
-cheap-alloc = ["mimalloc"]
+mim-alloc = ["mimalloc"]
+
+[profile.production]
+inherits = "release"
+codegen-units=1
+lto = true
