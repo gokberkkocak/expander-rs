@@ -16,7 +16,7 @@ There is an optional compilation feature which uses mimalloc __mim-alloc__;
 cargo build --release --features mim-alloc
 ```
 
-For fat lto and codegen-units=1 use __production__ profile;
+For release optimisations with fat lto and codegen-units=1 use __production__ profile;
 
 ```
 cargo build --profile production
