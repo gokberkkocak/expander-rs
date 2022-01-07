@@ -49,7 +49,7 @@ struct Opt {
     hash_only_expander: bool,
     /// Use Vec expander (default)
     #[structopt(
-        short = "o",
+        short = "v",
         long,
         conflicts_with = "bit_vec_expander",
         conflicts_with = "hash_only_expander",
@@ -58,7 +58,7 @@ struct Opt {
     vec_expander: bool,
     /// Use Bit Manipulator expander
     #[structopt(
-        short = "b",
+        short = "m",
         long,
         conflicts_with = "hash_only_expander",
         conflicts_with = "vec_expander",
@@ -67,7 +67,7 @@ struct Opt {
     bit_man_expander: bool,
     /// Use Bit Vec expander
     #[structopt(
-        short = "v",
+        short = "b",
         long,
         conflicts_with = "bit_man_expander",
         conflicts_with = "vec_expander",
