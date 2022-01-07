@@ -24,10 +24,10 @@ cargo build --profile production
 
 
 ## Usage
-There are 3 different expanding systems (default is hash-only) and 4 different hashing algorithms (default is FNV). Use the flags to change the expander system and the hasher.  
+There are 4 different expanding systems (default is bit-vec) and 4 different hashing algorithms (default is FNV). Use the flags to change the expander system and the hasher.  
 
 ```
-expander-rust 0.5.0
+expander-rust 0.5.1
 Closed/Maximal Itemset Expander
 
 USAGE:
@@ -35,14 +35,16 @@ USAGE:
 
 FLAGS:
     -a, --aes-hasher            Use AHash for Hasher (uses AES)
-    -b, --bit-man-expander      Use Bit Manipulator expander
-    -v, --bit-vec-expander      Use Bit Vec expander
+    -m, --bit-man-expander      Use Bit Manipulator expander (u128 for itemset - up to 128 items)
+    -b, --bit-vec-expander      Use Bit Vec expander (dynamic BitVec for itemset - no limits) (default)
     -f, --fnv-hasher            Use FNVHash for Hasher (default)
     -x, --fx-hasher             Use FXHash for Hasher
-    -o, --hash-only-expander    Use Hash-only expander (default)
+    -o, --hash-only-expander    Use Vec expander (u8 for each item - up to 256 items) with storing only hashes
+                                (experimental feature which can cause collisions - use with care)
     -h, --help                  Prints help information
-    -s, --std-hasher            Use Rust's std Hasher (HashBrown)
+    -s, --std-hasher            Use Rust's std Hasher (uses Google's SwissTable / HashBrown)
     -V, --version               Prints version information
+    -v, --vec-expander          Use Vec expander (u8 for each item - up to 256 items)
 
 ARGS:
     <input>    Input file in JSON format
