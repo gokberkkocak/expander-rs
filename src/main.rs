@@ -37,7 +37,7 @@ struct Opt {
     /// Input file in JSON format
     #[structopt(parse(from_os_str))]
     input: PathBuf,
-    /// Use Vec expander with storing only hashes
+    /// Use Vec expander (u8 for each item - up to 256 items) with storing only hashes
     /// (experimental feature which can cause collisions - use with care)
     #[structopt(
         short = "o",
@@ -47,7 +47,7 @@ struct Opt {
         conflicts_with = "vec_expander"
     )]
     hash_only_expander: bool,
-    /// Use Vec expander (default)
+    /// Use Vec expander (u8 for each item - up to 256 items) 
     #[structopt(
         short = "v",
         long,
@@ -56,7 +56,7 @@ struct Opt {
         conflicts_with = "bit_man_expander"
     )]
     vec_expander: bool,
-    /// Use Bit Manipulator expander
+    /// Use Bit Manipulator expander (u128 for itemset - up to 128 items)
     #[structopt(
         short = "m",
         long,
@@ -65,7 +65,7 @@ struct Opt {
         conflicts_with = "bit_vec_expander"
     )]
     bit_man_expander: bool,
-    /// Use Bit Vec expander
+    /// Use Bit Vec expander (dynamic BitVec for itemset - no limits) (default)
     #[structopt(
         short = "b",
         long,
@@ -92,7 +92,7 @@ struct Opt {
         conflicts_with = "std_hasher"
     )]
     fx_hasher: bool,
-    /// Use Rust's std Hasher (HashBrown)
+    /// Use Rust's std Hasher (uses Google's SwissTable / HashBrown)
     #[structopt(
         short = "s",
         long,
@@ -135,7 +135,7 @@ fn work(opt: &Opt, parsed_set: Vec<JsonSet>) {
         opt.bit_vec_expander,
         opt.bit_man_expander,
     ) {
-        (_, false, false, false) => match (
+        (true, false, false, false) => match (
             opt.fnv_hasher,
             opt.fx_hasher,
             opt.std_hasher,
@@ -175,7 +175,7 @@ fn work(opt: &Opt, parsed_set: Vec<JsonSet>) {
             }
             _ => unreachable!(),
         },
-        (false, false, true, false) => match (
+        (false, false, _, false) => match (
             opt.fnv_hasher,
             opt.fx_hasher,
             opt.std_hasher,
