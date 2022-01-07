@@ -1,25 +1,20 @@
-use std::hash::{Hash, Hasher};
-
 use crate::expander::Expander;
 use crate::JsonSet;
 
-pub(crate) struct HashOnlyExpander<T, S> {
-    _phantom_hash_set: std::marker::PhantomData<T>,
-    _phantom_hasher: std::marker::PhantomData<S>,
+pub(crate) struct VecExpander<T> {
+    _phantom: std::marker::PhantomData<T>,
 }
 
-impl<T, S> Expander<T> for HashOnlyExpander<T, S>
+impl<T> Expander<T> for VecExpander<T>
 where
     T: Default,
     T: IntoIterator,
-    T::Item: Into<u64>,
-    T: crate::expander::SetLike<u64>,
-    S: Hasher,
-    S: Default,
+    T::Item: Into<Vec<u8>>,
+    T: crate::expander::SetLike<Vec<u8>>,
 {
     type SolutionType = Vec<u8>;
 
-    type HashType = u64;
+    type HashType = Vec<u8>;
 
     fn expand(parsed_set: Vec<JsonSet>) -> T {
         let mut final_set = T::default();
@@ -34,28 +29,24 @@ where
         if length > 1 {
             for i in 0..length {
                 let el = solution.remove(i);
-                let mut hasher = S::default();
-                Hash::hash_slice(solution, &mut hasher);
-                if !final_set.set_contains(&hasher.finish()) {
+                if !final_set.set_contains(&solution) {
                     Self::expand_one_solution_to_lower_level(solution, final_set);
                 }
                 solution.insert(i, el);
             }
         }
-        let mut hasher = S::default();
-        Hash::hash_slice(solution, &mut hasher);
-        final_set.set_insert(hasher.finish());
+        final_set.set_insert(solution.clone());
     }
 }
 
 #[cfg(test)]
 mod tests {
 
-    use std::collections::{hash_map::DefaultHasher, HashSet};
+    use std::collections::HashSet;
 
-    use ahash::{AHashSet, AHasher};
-    use fnv::{FnvHashSet, FnvHasher};
-    use fxhash::{FxHashSet, FxHasher};
+    use ahash::AHashSet;
+    use fnv::FnvHashSet;
+    use fxhash::FxHashSet;
 
     use super::*;
     #[test]
@@ -65,7 +56,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            HashOnlyExpander::<FnvHashSet<u64>, FnvHasher>::expand(parsed_set).len(),
+            VecExpander::<FnvHashSet<Vec<u8>>>::expand(parsed_set).len(),
             14
         );
     }
@@ -79,7 +70,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            HashOnlyExpander::<FnvHashSet<u64>, FnvHasher>::expand(parsed_set).len(),
+            VecExpander::<FnvHashSet<Vec<u8>>>::expand(parsed_set).len(),
             17
         );
     }
@@ -91,7 +82,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            HashOnlyExpander::<FxHashSet<u64>, FxHasher>::expand(parsed_set).len(),
+            VecExpander::<FxHashSet<Vec<u8>>>::expand(parsed_set).len(),
             14
         );
     }
@@ -104,7 +95,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            HashOnlyExpander::<FxHashSet<u64>, FxHasher>::expand(parsed_set).len(),
+            VecExpander::<FxHashSet<Vec<u8>>>::expand(parsed_set).len(),
             17
         );
     }
@@ -116,7 +107,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            HashOnlyExpander::<HashSet<u64>, DefaultHasher>::expand(parsed_set).len(),
+            VecExpander::<HashSet<Vec<u8>>>::expand(parsed_set).len(),
             14
         );
     }
@@ -129,7 +120,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            HashOnlyExpander::<HashSet<u64>, DefaultHasher>::expand(parsed_set).len(),
+            VecExpander::<HashSet<Vec<u8>>>::expand(parsed_set).len(),
             17
         );
     }
@@ -141,7 +132,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            HashOnlyExpander::<AHashSet<u64>, AHasher>::expand(parsed_set).len(),
+            VecExpander::<AHashSet<Vec<u8>>>::expand(parsed_set).len(),
             14
         );
     }
@@ -154,7 +145,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            HashOnlyExpander::<AHashSet<u64>, AHasher>::expand(parsed_set).len(),
+            VecExpander::<AHashSet<Vec<u8>>>::expand(parsed_set).len(),
             17
         );
     }

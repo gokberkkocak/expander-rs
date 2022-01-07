@@ -1,6 +1,7 @@
 pub(crate) mod bitman;
 pub(crate) mod bitvec;
-pub(crate) mod hashonly;
+pub(crate) mod vechashonly;
+pub(crate) mod vec;
 
 use std::{collections::HashSet, hash::Hash};
 

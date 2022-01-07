@@ -1,78 +1,61 @@
-use crate::{expander::Expander, JsonSet};
+use std::hash::{Hash, Hasher};
 
-use bitvec::vec::BitVec;
+use crate::expander::Expander;
+use crate::JsonSet;
 
-fn convert_itemset(itemset: &[u8], nb_bits: usize) -> BitVec {
-    let mut bv = BitVec::with_capacity(nb_bits);
-    (0..nb_bits).for_each(|i| match itemset.iter().find(|&&x| x == i as u8) {
-        Some(_) => bv.push(true),
-        None => bv.push(false),
-    });
-    bv
+pub(crate) struct VecHashOnlyExpander<T, S> {
+    _phantom_hash_set: std::marker::PhantomData<T>,
+    _phantom_hasher: std::marker::PhantomData<S>,
 }
 
-fn get_number_of_required_bits(parsed_set: &[JsonSet]) -> usize {
-    *parsed_set
-        .iter()
-        .map(|x| x.set.iter().max().unwrap())
-        .max()
-        .unwrap() as usize
-        + 1
-}
-
-pub(crate) struct BitVecExpander<T> {
-    _phantom: std::marker::PhantomData<T>,
-}
-
-impl<T> Expander<T> for BitVecExpander<T>
+impl<T, S> Expander<T> for VecHashOnlyExpander<T, S>
 where
     T: Default,
     T: IntoIterator,
-    T::Item: Into<BitVec>,
-    T: crate::expander::SetLike<BitVec>,
+    T::Item: Into<u64>,
+    T: crate::expander::SetLike<u64>,
+    S: Hasher,
+    S: Default,
 {
-    type SolutionType = BitVec;
+    type SolutionType = Vec<u8>;
 
-    type HashType = BitVec;
+    type HashType = u64;
 
     fn expand(parsed_set: Vec<JsonSet>) -> T {
         let mut final_set = T::default();
-        let nb_bits = get_number_of_required_bits(&parsed_set);
-        let parsed_set = parsed_set
-            .iter()
-            .map(|x| convert_itemset(&x.set, nb_bits))
-            .collect::<Vec<_>>();
         for mut i in parsed_set {
-            Self::expand_one_solution_to_lower_level(&mut i, &mut final_set);
+            Self::expand_one_solution_to_lower_level(&mut i.set, &mut final_set);
         }
         final_set
     }
 
     fn expand_one_solution_to_lower_level(solution: &mut Self::SolutionType, final_set: &mut T) {
-        let ones_length = solution.iter().filter(|x| **x).count();
-        if ones_length > 1 {
-            for i in 0..solution.len() {
-                if solution[i] {
-                    solution.set(i, false);
-                    if !final_set.set_contains(solution) {
-                        Self::expand_one_solution_to_lower_level(solution, final_set);
-                    }
-                    solution.set(i, true);
+        let length = solution.len();
+        if length > 1 {
+            for i in 0..length {
+                let el = solution.remove(i);
+                let mut hasher = S::default();
+                Hash::hash_slice(solution, &mut hasher);
+                if !final_set.set_contains(&hasher.finish()) {
+                    Self::expand_one_solution_to_lower_level(solution, final_set);
                 }
+                solution.insert(i, el);
             }
         }
-        final_set.set_insert(solution.clone());
+        let mut hasher = S::default();
+        Hash::hash_slice(solution, &mut hasher);
+        final_set.set_insert(hasher.finish());
     }
 }
 
 #[cfg(test)]
 mod tests {
 
-    use std::collections::HashSet;
+    use std::collections::{hash_map::DefaultHasher, HashSet};
 
-    use ahash::AHashSet;
-    use fnv::FnvHashSet;
-    use fxhash::FxHashSet;
+    use ahash::{AHashSet, AHasher};
+    use fnv::{FnvHashSet, FnvHasher};
+    use fxhash::{FxHashSet, FxHasher};
 
     use super::*;
     #[test]
@@ -82,7 +65,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            BitVecExpander::<FnvHashSet<BitVec>>::expand(parsed_set).len(),
+            VecHashOnlyExpander::<FnvHashSet<u64>, FnvHasher>::expand(parsed_set).len(),
             14
         );
     }
@@ -96,7 +79,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            BitVecExpander::<FnvHashSet<BitVec>>::expand(parsed_set).len(),
+            VecHashOnlyExpander::<FnvHashSet<u64>, FnvHasher>::expand(parsed_set).len(),
             17
         );
     }
@@ -108,7 +91,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            BitVecExpander::<FxHashSet<BitVec>>::expand(parsed_set).len(),
+            VecHashOnlyExpander::<FxHashSet<u64>, FxHasher>::expand(parsed_set).len(),
             14
         );
     }
@@ -121,7 +104,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            BitVecExpander::<FxHashSet<BitVec>>::expand(parsed_set).len(),
+            VecHashOnlyExpander::<FxHashSet<u64>, FxHasher>::expand(parsed_set).len(),
             17
         );
     }
@@ -133,7 +116,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            BitVecExpander::<HashSet<BitVec>>::expand(parsed_set).len(),
+            VecHashOnlyExpander::<HashSet<u64>, DefaultHasher>::expand(parsed_set).len(),
             14
         );
     }
@@ -146,7 +129,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            BitVecExpander::<HashSet<BitVec>>::expand(parsed_set).len(),
+            VecHashOnlyExpander::<HashSet<u64>, DefaultHasher>::expand(parsed_set).len(),
             17
         );
     }
@@ -158,7 +141,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            BitVecExpander::<AHashSet<BitVec>>::expand(parsed_set).len(),
+            VecHashOnlyExpander::<AHashSet<u64>, AHasher>::expand(parsed_set).len(),
             14
         );
     }
@@ -171,7 +154,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            BitVecExpander::<AHashSet<BitVec>>::expand(parsed_set).len(),
+            VecHashOnlyExpander::<AHashSet<u64>, AHasher>::expand(parsed_set).len(),
             17
         );
     }
