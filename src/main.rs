@@ -2,7 +2,8 @@ mod expander;
 
 use crate::expander::bitman::BitManipulatorExpander;
 use crate::expander::bitvec::BitVecExpander;
-use crate::expander::hashonly::HashOnlyExpander;
+use crate::expander::vec::VecExpander;
+use crate::expander::vechashonly::VecHashOnlyExpander;
 use crate::expander::Expander;
 
 use ahash::{AHashSet, AHasher};
@@ -36,19 +37,31 @@ struct Opt {
     /// Input file in JSON format
     #[structopt(parse(from_os_str))]
     input: PathBuf,
-    /// Use Hash-only expander (default)
+    /// Use Vec expander with storing only hashes
+    /// (experimental feature which can cause collisions - use with care)
     #[structopt(
         short = "o",
         long,
         conflicts_with = "bit_vec_expander",
-        conflicts_with = "bit_man_expander"
+        conflicts_with = "bit_man_expander",
+        conflicts_with = "vec_expander"
     )]
     hash_only_expander: bool,
+    /// Use Vec expander (default)
+    #[structopt(
+        short = "o",
+        long,
+        conflicts_with = "bit_vec_expander",
+        conflicts_with = "hash_only_expander",
+        conflicts_with = "bit_man_expander"
+    )]
+    vec_expander: bool,
     /// Use Bit Manipulator expander
     #[structopt(
         short = "b",
         long,
         conflicts_with = "hash_only_expander",
+        conflicts_with = "vec_expander",
         conflicts_with = "bit_vec_expander"
     )]
     bit_man_expander: bool,
@@ -57,7 +70,7 @@ struct Opt {
         short = "v",
         long,
         conflicts_with = "bit_man_expander",
-        conflicts_with = "aes_hasher",
+        conflicts_with = "vec_expander",
         conflicts_with = "hash_only_expander"
     )]
     bit_vec_expander: bool,
@@ -117,31 +130,52 @@ fn main() -> Result<()> {
 
 fn work(opt: &Opt, parsed_set: Vec<JsonSet>) {
     let len = match (
+        opt.vec_expander,
         opt.hash_only_expander,
         opt.bit_vec_expander,
         opt.bit_man_expander,
     ) {
-        (_, false, false) => match (
+        (_, false, false, false) => match (
             opt.fnv_hasher,
             opt.fx_hasher,
             opt.std_hasher,
             opt.aes_hasher,
         ) {
             (_, false, false, false) => {
-                HashOnlyExpander::<FnvHashSet<u64>, FnvHasher>::expand(parsed_set).len()
+                VecExpander::<FnvHashSet<Vec<u8>>>::expand(parsed_set).len()
             }
             (false, true, false, false) => {
-                HashOnlyExpander::<FxHashSet<u64>, FxHasher>::expand(parsed_set).len()
+                VecExpander::<FxHashSet<Vec<u8>>>::expand(parsed_set).len()
             }
             (false, false, true, false) => {
-                HashOnlyExpander::<HashSet<u64>, DefaultHasher>::expand(parsed_set).len()
+                VecExpander::<HashSet<Vec<u8>>>::expand(parsed_set).len()
             }
             (false, false, false, true) => {
-                HashOnlyExpander::<AHashSet<u64>, AHasher>::expand(parsed_set).len()
+                VecExpander::<AHashSet<Vec<u8>>>::expand(parsed_set).len()
             }
             _ => unreachable!(),
         },
-        (false, true, false) => match (
+        (false, true, false, false) => match (
+            opt.fnv_hasher,
+            opt.fx_hasher,
+            opt.std_hasher,
+            opt.aes_hasher,
+        ) {
+            (_, false, false, false) => {
+                VecHashOnlyExpander::<FnvHashSet<u64>, FnvHasher>::expand(parsed_set).len()
+            }
+            (false, true, false, false) => {
+                VecHashOnlyExpander::<FxHashSet<u64>, FxHasher>::expand(parsed_set).len()
+            }
+            (false, false, true, false) => {
+                VecHashOnlyExpander::<HashSet<u64>, DefaultHasher>::expand(parsed_set).len()
+            }
+            (false, false, false, true) => {
+                VecHashOnlyExpander::<AHashSet<u64>, AHasher>::expand(parsed_set).len()
+            }
+            _ => unreachable!(),
+        },
+        (false, false, true, false) => match (
             opt.fnv_hasher,
             opt.fx_hasher,
             opt.std_hasher,
@@ -161,7 +195,7 @@ fn work(opt: &Opt, parsed_set: Vec<JsonSet>) {
             }
             _ => unreachable!(),
         },
-        (false, false, true) => match (
+        (false, false, false, true) => match (
             opt.fnv_hasher,
             opt.fx_hasher,
             opt.std_hasher,
