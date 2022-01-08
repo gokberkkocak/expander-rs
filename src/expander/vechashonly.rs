@@ -8,16 +8,18 @@ pub(crate) struct VecHashOnlyExpander<T, S> {
     _phantom_hasher: std::marker::PhantomData<S>,
 }
 
-impl<T, S> Expander for VecHashOnlyExpander<T, S>
+impl<T, S> Expander<T> for VecHashOnlyExpander<T, S>
 where
     T: Default,
+    T: IntoIterator,
+    T::Item: Into<u64>,
     T: crate::expander::SetLike<u64>,
     S: Hasher,
     S: Default,
 {
     type SolutionType = Vec<u8>;
+
     type HashType = u64;
-    type SetType = T;
 
     fn expand(parsed_set: Vec<JsonSet>) -> T {
         let mut final_set = T::default();

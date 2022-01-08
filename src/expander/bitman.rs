@@ -12,14 +12,16 @@ pub(crate) struct BitManipulatorExpander<T> {
     _phantom: std::marker::PhantomData<T>,
 }
 
-impl<T> Expander for BitManipulatorExpander<T>
+impl<T> Expander<T> for BitManipulatorExpander<T>
 where
     T: Default,
+    T: IntoIterator,
+    T::Item: Into<u128>,
     T: crate::expander::SetLike<u128>,
 {
     type SolutionType = u128;
+
     type HashType = u128;
-    type SetType = T;
 
     fn expand(parsed_set: Vec<JsonSet>) -> T {
         let mut final_set = T::default();

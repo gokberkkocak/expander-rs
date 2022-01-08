@@ -8,21 +8,21 @@ use std::{collections::HashSet, hash::Hash};
 use ahash::AHashSet;
 use fnv::FnvHashSet;
 use fxhash::FxHashSet;
-use serde::Serialize;
 
 use crate::JsonSet;
-pub(crate) trait Expander
+pub(crate) trait Expander<T>
 where
     Self::HashType: Eq,
     Self::HashType: Hash,
-    Self::SetType: Default,
-    Self::SetType: SetLike<Self::HashType>,
+    T: Default,
+    T: IntoIterator,
+    T::Item: Into<Self::HashType>,
+    T: SetLike<Self::HashType>,
 {
     type SolutionType;
-    type SetType;
     type HashType;
-    fn expand(parsed_set: Vec<JsonSet>) -> Self::SetType;
-    fn expand_one_solution_to_lower_level(solution: &mut Self::SolutionType, final_set: &mut Self::SetType);
+    fn expand(parsed_set: Vec<JsonSet>) -> T;
+    fn expand_one_solution_to_lower_level(solution: &mut Self::SolutionType, final_set: &mut T);
 }
 
 pub(crate) trait SetLike<T>
@@ -57,7 +57,3 @@ impl_setlike!(HashSet);
 impl_setlike!(FxHashSet);
 impl_setlike!(FnvHashSet);
 impl_setlike!(AHashSet);
-
-trait My : Serialize {}
-
-impl<T : Serialize + Eq + Hash> My for AHashSet<T> {}
