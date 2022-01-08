@@ -5,15 +5,13 @@ pub(crate) struct VecExpander<T> {
     _phantom: std::marker::PhantomData<T>,
 }
 
-impl<T> Expander<T> for VecExpander<T>
+impl<T> Expander for VecExpander<T>
 where
     T: Default,
-    T: IntoIterator,
-    T::Item: Into<Vec<u8>>,
     T: crate::expander::SetLike<Vec<u8>>,
 {
     type SolutionType = Vec<u8>;
-
+    type SetType = T;
     type HashType = Vec<u8>;
 
     fn expand(parsed_set: Vec<JsonSet>) -> T {
@@ -29,7 +27,7 @@ where
         if length > 1 {
             for i in 0..length {
                 let el = solution.remove(i);
-                if !final_set.set_contains(&solution) {
+                if !final_set.set_contains(solution) {
                     Self::expand_one_solution_to_lower_level(solution, final_set);
                 }
                 solution.insert(i, el);

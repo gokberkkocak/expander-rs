@@ -10,19 +10,18 @@ use fnv::FnvHashSet;
 use fxhash::FxHashSet;
 
 use crate::JsonSet;
-pub(crate) trait Expander<T>
+pub(crate) trait Expander
 where
     Self::HashType: Eq,
     Self::HashType: Hash,
-    T: Default,
-    T: IntoIterator,
-    T::Item: Into<Self::HashType>,
-    T: SetLike<Self::HashType>,
+    Self::SetType: Default,
+    Self::SetType: SetLike<Self::HashType>,
 {
     type SolutionType;
     type HashType;
-    fn expand(parsed_set: Vec<JsonSet>) -> T;
-    fn expand_one_solution_to_lower_level(solution: &mut Self::SolutionType, final_set: &mut T);
+    type SetType;
+    fn expand(parsed_set: Vec<JsonSet>) -> Self::SetType;
+    fn expand_one_solution_to_lower_level(solution: &mut Self::SolutionType, final_set: &mut Self::SetType);
 }
 
 pub(crate) trait SetLike<T>
