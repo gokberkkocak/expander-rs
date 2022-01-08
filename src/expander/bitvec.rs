@@ -24,16 +24,15 @@ pub(crate) struct BitVecExpander<T> {
     _phantom: std::marker::PhantomData<T>,
 }
 
-impl<T> Expander<T> for BitVecExpander<T>
+impl<T> Expander for BitVecExpander<T>
 where
     T: Default,
-    T: IntoIterator,
-    T::Item: Into<BitVec>,
     T: crate::expander::SetLike<BitVec>,
 {
     type SolutionType = BitVec;
-
     type HashType = BitVec;
+    type SetType = T;
+
 
     fn expand(parsed_set: Vec<JsonSet>) -> T {
         let mut final_set = T::default();
