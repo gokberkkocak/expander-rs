@@ -8,7 +8,7 @@ use crate::expander::Expander;
 
 use ahash::AHasher;
 use anyhow::Result;
-use expander::SerializeLen;
+use expander::SetLen;
 use expander::WrappedAHashSet;
 use expander::WrappedBitVec;
 use fnv::{FnvHashSet, FnvHasher};
@@ -150,7 +150,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn work(opt: &Opt, parsed_set: Vec<JsonSet>) -> Box<dyn SerializeLen> {
+fn work(opt: &Opt, parsed_set: Vec<JsonSet>) -> Box<dyn SetLen> {
     match (
         opt.vec_expander,
         opt.hash_only_expander,

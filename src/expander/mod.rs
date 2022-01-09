@@ -132,18 +132,10 @@ impl_setlen!(FnvHashSet);
 impl_setlen!(AHashSet);
 impl_setlen!(WrappedAHashSet);
 
-
-pub(crate) trait SerializeLen : ErasedSerialize + SetLen {}
-
-impl Serialize for dyn SerializeLen {
+impl Serialize for dyn SetLen {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer {
             erased_serde::serialize(self, serializer)
     }
 }
-
-impl<T : Eq + Hash + Serialize > SerializeLen for HashSet<T> {}
-impl<T : Eq + Hash + Serialize > SerializeLen for FxHashSet<T> {}
-impl<T : Eq + Hash + Serialize > SerializeLen for FnvHashSet<T> {}
-impl<T : Eq + Hash + Serialize > SerializeLen for WrappedAHashSet<T> {}
