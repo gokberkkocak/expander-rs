@@ -116,8 +116,8 @@ struct Opt {
     )]
     aes_hasher: bool,
     /// Optional output file in JSON format
-    /// Each Expander will serialize itemsets closed to their internal representation.
-    /// Most human readable with VecExpander or BitVecExpander.
+    /// Each Expander will serialize itemsets closer to their internal representation.
+    /// Most human readable with BitVecExpander or VecExpander.
     /// Pretty much useless with Hash-only Expander.
     #[structopt(short = "o", long, parse(from_os_str))]
     output: Option<PathBuf>,
