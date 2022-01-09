@@ -8,9 +8,9 @@ use crate::expander::Expander;
 
 use ahash::AHasher;
 use anyhow::Result;
-use expander::SetLen;
-use expander::WrappedAHashSet;
-use expander::WrappedBitVec;
+use expander::set::SerializedLen;
+use expander::set::WrappedAHashSet;
+use expander::set::WrappedBitVec;
 use fnv::{FnvHashSet, FnvHasher};
 use fxhash::{FxHashSet, FxHasher};
 use serde::Deserialize;
@@ -115,7 +115,10 @@ struct Opt {
         conflicts_with = "std_hasher"
     )]
     aes_hasher: bool,
-    /// Optional output file in JSON format
+    /// Optional output file in JSON format 
+    /// Each Expander will serialize itemsets closed to their internal representation.
+    /// Most human readable with VecExpander or BitVecExpander.
+    /// Pretty much useless with Hash-only Expander. 
     #[structopt(short = "o", long, parse(from_os_str))]
     output: Option<PathBuf>,
 }
@@ -142,7 +145,7 @@ fn main() -> Result<()> {
     let contents = read_file(&opt.input);
     let parsed_set: Vec<JsonSet> = serde_json::from_str(&contents?)?;
     let boxed_set = work(&opt, parsed_set);
-    println!("Total nb of item-sets: {}", boxed_set.set_len());
+    println!("Total nb of item-sets: {}", boxed_set.ser_len());
     if let Some(output_path) = opt.output {
         let boxed_set_str = serde_json::to_string(&boxed_set)?;
         write_to_file(boxed_set_str.as_bytes(), &output_path);
@@ -150,7 +153,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn work(opt: &Opt, parsed_set: Vec<JsonSet>) -> Box<dyn SetLen> {
+fn work(opt: &Opt, parsed_set: Vec<JsonSet>) -> Box<dyn SerializedLen> {
     match (
         opt.vec_expander,
         opt.hash_only_expander,

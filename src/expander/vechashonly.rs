@@ -51,11 +51,11 @@ mod tests {
 
     use std::collections::{hash_map::DefaultHasher, HashSet};
 
-    use ahash::{AHashSet, AHasher};
+    use ahash::{AHasher};
     use fnv::{FnvHashSet, FnvHasher};
     use fxhash::{FxHashSet, FxHasher};
 
-    use crate::expander::WrappedAHashSet;
+    use crate::expander::set::WrappedAHashSet;
 
     use super::*;
     #[test]

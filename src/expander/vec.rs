@@ -42,11 +42,10 @@ mod tests {
 
     use std::collections::HashSet;
 
-    use ahash::AHashSet;
     use fnv::FnvHashSet;
     use fxhash::FxHashSet;
 
-    use crate::expander::WrappedAHashSet;
+    use crate::expander::set::WrappedAHashSet;
 
     use super::*;
     #[test]
@@ -147,6 +146,35 @@ mod tests {
         assert_eq!(
             VecExpander::<WrappedAHashSet<Vec<u8>>>::expand(parsed_set).len(),
             17
+        );
+    }
+    #[test]
+    fn test_1_serialize() {
+        let parsed_set = vec![
+            JsonSet { set: vec![1, 2, 3] },
+            JsonSet { set: vec![4, 5, 6] },
+        ];
+        let expanded_set = VecExpander::<FnvHashSet<Vec<u8>>>::expand(parsed_set);
+        let serialized_set = serde_json::to_string(&expanded_set).unwrap();
+        assert_eq!(
+            serialized_set.len(),
+            77
+        );
+    }
+
+    #[test]
+    fn test_2_serialize() {
+        let parsed_set = vec![
+            JsonSet {
+                set: vec![57, 58, 59, 60],
+            },
+            JsonSet { set: vec![60, 99] },
+        ];
+        let expanded_set = VecExpander::<FnvHashSet<Vec<u8>>>::expand(parsed_set);
+        let serialized_set = serde_json::to_string(&expanded_set).unwrap();
+        assert_eq!(
+            serialized_set.len(),
+            140
         );
     }
 }
