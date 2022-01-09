@@ -10,8 +10,7 @@ use std::hash::Hash;
 
 pub(crate) trait Expander
 where
-    Self::HashType: Eq,
-    Self::HashType: Hash,
+    Self::HashType: Eq + Hash,
     Self::SetType: Default,
     Self::SetType: SetLike<Self::HashType>,
 {
