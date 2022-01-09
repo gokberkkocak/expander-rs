@@ -8,23 +8,18 @@ use crate::expander::Expander;
 
 use ahash::AHasher;
 use anyhow::Result;
-use erased_serde::Serializer;
 use expander::SerializeLen;
-use expander::SetLen;
 use expander::WrappedAHashSet;
 use expander::WrappedBitVec;
 use fnv::{FnvHashSet, FnvHasher};
 use fxhash::{FxHashSet, FxHasher};
 use serde::Deserialize;
 
-
-// use serde::Serialize;
-use erased_serde::Serialize;
-
-
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashSet;
 use std::fs::File;
+use std::io::BufWriter;
+use std::io::Write;
 use std::io::{BufReader, Read};
 use std::path::Path;
 use std::path::PathBuf;
@@ -133,16 +128,25 @@ pub fn read_file(filepath: &Path) -> Result<String> {
     Ok(contents)
 }
 
+fn write_to_file(contents: &[u8], filepath: &Path) {
+    let file = File::create(filepath).expect("Unable to create file");
+    let mut buffered_writer = BufWriter::new(file);
+    buffered_writer
+        .write_all(contents)
+        .expect("Unable to write to file");
+}
+
+
 fn main() -> Result<()> {
     let opt = Opt::from_args();
     let contents = read_file(&opt.input);
     let parsed_set: Vec<JsonSet> = serde_json::from_str(&contents?)?;
     let boxed_set = work(&opt, parsed_set);
+    println!("Total nb of item-sets: {}", boxed_set.set_len());
     if let Some(output_path) = opt.output {
         let boxed_set_str = serde_json::to_string(&boxed_set)?;
-        todo!()
+        write_to_file(boxed_set_str.as_bytes(), &output_path);
     }
-    println!("Total nb of item-sets: {}", boxed_set.set_len());
     Ok(())
 }
 
