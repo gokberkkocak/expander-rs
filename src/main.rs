@@ -6,12 +6,22 @@ use crate::expander::vec::VecExpander;
 use crate::expander::vechashonly::VecHashOnlyExpander;
 use crate::expander::Expander;
 
-use ahash::{AHashSet, AHasher};
+use ahash::AHasher;
 use anyhow::Result;
-use bitvec::prelude::BitVec;
+use erased_serde::Serializer;
+use expander::SerializeLen;
+use expander::SetLen;
+use expander::WrappedAHashSet;
+use expander::WrappedBitVec;
 use fnv::{FnvHashSet, FnvHasher};
 use fxhash::{FxHashSet, FxHasher};
 use serde::Deserialize;
+
+
+// use serde::Serialize;
+use erased_serde::Serialize;
+
+
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashSet;
 use std::fs::File;
@@ -47,7 +57,7 @@ struct Opt {
         conflicts_with = "vec_expander"
     )]
     hash_only_expander: bool,
-    /// Use Vec expander (u8 for each item - up to 256 items) 
+    /// Use Vec expander (u8 for each item - up to 256 items)
     #[structopt(
         short = "v",
         long,
@@ -110,6 +120,9 @@ struct Opt {
         conflicts_with = "std_hasher"
     )]
     aes_hasher: bool,
+    /// Optional output file in JSON format
+    #[structopt(short = "o", long, parse(from_os_str))]
+    output: Option<PathBuf>,
 }
 
 pub fn read_file(filepath: &Path) -> Result<String> {
@@ -124,12 +137,17 @@ fn main() -> Result<()> {
     let opt = Opt::from_args();
     let contents = read_file(&opt.input);
     let parsed_set: Vec<JsonSet> = serde_json::from_str(&contents?)?;
-    work(&opt, parsed_set);
+    let boxed_set = work(&opt, parsed_set);
+    if let Some(output_path) = opt.output {
+        let boxed_set_str = serde_json::to_string(&boxed_set)?;
+        todo!()
+    }
+    println!("Total nb of item-sets: {}", boxed_set.set_len());
     Ok(())
 }
 
-fn work(opt: &Opt, parsed_set: Vec<JsonSet>) {
-    let len = match (
+fn work(opt: &Opt, parsed_set: Vec<JsonSet>) -> Box<dyn SerializeLen> {
+    match (
         opt.vec_expander,
         opt.hash_only_expander,
         opt.bit_vec_expander,
@@ -142,16 +160,16 @@ fn work(opt: &Opt, parsed_set: Vec<JsonSet>) {
             opt.aes_hasher,
         ) {
             (_, false, false, false) => {
-                VecExpander::<FnvHashSet<Vec<u8>>>::expand(parsed_set).len()
+                Box::new(VecExpander::<FnvHashSet<Vec<u8>>>::expand(parsed_set))
             }
             (false, true, false, false) => {
-                VecExpander::<FxHashSet<Vec<u8>>>::expand(parsed_set).len()
+                Box::new(VecExpander::<FxHashSet<Vec<u8>>>::expand(parsed_set))
             }
             (false, false, true, false) => {
-                VecExpander::<HashSet<Vec<u8>>>::expand(parsed_set).len()
+                Box::new(VecExpander::<HashSet<Vec<u8>>>::expand(parsed_set))
             }
             (false, false, false, true) => {
-                VecExpander::<AHashSet<Vec<u8>>>::expand(parsed_set).len()
+                Box::new(VecExpander::<WrappedAHashSet<Vec<u8>>>::expand(parsed_set))
             }
             _ => unreachable!(),
         },
@@ -161,17 +179,18 @@ fn work(opt: &Opt, parsed_set: Vec<JsonSet>) {
             opt.std_hasher,
             opt.aes_hasher,
         ) {
-            (_, false, false, false) => {
-                VecHashOnlyExpander::<FnvHashSet<u64>, FnvHasher>::expand(parsed_set).len()
-            }
-            (false, true, false, false) => {
-                VecHashOnlyExpander::<FxHashSet<u64>, FxHasher>::expand(parsed_set).len()
-            }
-            (false, false, true, false) => {
-                VecHashOnlyExpander::<HashSet<u64>, DefaultHasher>::expand(parsed_set).len()
-            }
+            (_, false, false, false) => Box::new(
+                VecHashOnlyExpander::<FnvHashSet<u64>, FnvHasher>::expand(parsed_set),
+            ),
+            (false, true, false, false) => Box::new(
+                VecHashOnlyExpander::<FxHashSet<u64>, FxHasher>::expand(parsed_set),
+            ),
+            (false, false, true, false) => Box::new(VecHashOnlyExpander::<
+                HashSet<u64>,
+                DefaultHasher,
+            >::expand(parsed_set)),
             (false, false, false, true) => {
-                VecHashOnlyExpander::<AHashSet<u64>, AHasher>::expand(parsed_set).len()
+                Box::new(VecHashOnlyExpander::<WrappedAHashSet<u64>, AHasher>::expand(parsed_set))
             }
             _ => unreachable!(),
         },
@@ -181,18 +200,18 @@ fn work(opt: &Opt, parsed_set: Vec<JsonSet>) {
             opt.std_hasher,
             opt.aes_hasher,
         ) {
-            (_, false, false, false) => {
-                BitVecExpander::<FnvHashSet<BitVec>>::expand(parsed_set).len()
-            }
-            (false, true, false, false) => {
-                BitVecExpander::<FxHashSet<BitVec>>::expand(parsed_set).len()
-            }
+            (_, false, false, false) => Box::new(
+                BitVecExpander::<FnvHashSet<WrappedBitVec>>::expand(parsed_set),
+            ),
+            (false, true, false, false) => Box::new(
+                BitVecExpander::<FxHashSet<WrappedBitVec>>::expand(parsed_set),
+            ),
             (false, false, true, false) => {
-                BitVecExpander::<HashSet<BitVec>>::expand(parsed_set).len()
+                Box::new(BitVecExpander::<HashSet<WrappedBitVec>>::expand(parsed_set))
             }
-            (false, false, false, true) => {
-                BitVecExpander::<AHashSet<BitVec>>::expand(parsed_set).len()
-            }
+            (false, false, false, true) => Box::new(
+                BitVecExpander::<WrappedAHashSet<WrappedBitVec>>::expand(parsed_set),
+            ),
             _ => unreachable!(),
         },
         (false, false, false, true) => match (
@@ -201,21 +220,21 @@ fn work(opt: &Opt, parsed_set: Vec<JsonSet>) {
             opt.std_hasher,
             opt.aes_hasher,
         ) {
-            (_, false, false, false) => {
-                BitManipulatorExpander::<FnvHashSet<u128>>::expand(parsed_set).len()
-            }
-            (false, true, false, false) => {
-                BitManipulatorExpander::<FxHashSet<u128>>::expand(parsed_set).len()
-            }
+            (_, false, false, false) => Box::new(
+                BitManipulatorExpander::<FnvHashSet<u128>>::expand(parsed_set),
+            ),
+            (false, true, false, false) => Box::new(
+                BitManipulatorExpander::<FxHashSet<u128>>::expand(parsed_set),
+            ),
             (false, false, true, false) => {
-                BitManipulatorExpander::<HashSet<u128>>::expand(parsed_set).len()
+                Box::new(BitManipulatorExpander::<HashSet<u128>>::expand(parsed_set))
             }
-            (false, false, false, true) => {
-                BitManipulatorExpander::<AHashSet<u128>>::expand(parsed_set).len()
-            }
+            (false, false, false, true) => Box::new(
+                BitManipulatorExpander::<WrappedAHashSet<u128>>::expand(parsed_set),
+            ),
             _ => unreachable!(),
         },
         _ => unreachable!(),
-    };
-    println!("Total nb of item-sets: {}", len);
+    }
+
 }

@@ -46,6 +46,8 @@ mod tests {
     use fnv::FnvHashSet;
     use fxhash::FxHashSet;
 
+    use crate::expander::WrappedAHashSet;
+
     use super::*;
     #[test]
     fn test_1_fnv() {
@@ -130,7 +132,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            VecExpander::<AHashSet<Vec<u8>>>::expand(parsed_set).len(),
+            VecExpander::<WrappedAHashSet<Vec<u8>>>::expand(parsed_set).len(),
             14
         );
     }
@@ -143,7 +145,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            VecExpander::<AHashSet<Vec<u8>>>::expand(parsed_set).len(),
+            VecExpander::<WrappedAHashSet<Vec<u8>>>::expand(parsed_set).len(),
             17
         );
     }
