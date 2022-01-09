@@ -156,10 +156,7 @@ mod tests {
         ];
         let expanded_set = VecExpander::<FnvHashSet<Vec<u8>>>::expand(parsed_set);
         let serialized_set = serde_json::to_string(&expanded_set).unwrap();
-        assert_eq!(
-            serialized_set.len(),
-            77
-        );
+        assert_eq!(serialized_set.len(), 77);
     }
 
     #[test]
@@ -172,9 +169,6 @@ mod tests {
         ];
         let expanded_set = VecExpander::<FnvHashSet<Vec<u8>>>::expand(parsed_set);
         let serialized_set = serde_json::to_string(&expanded_set).unwrap();
-        assert_eq!(
-            serialized_set.len(),
-            140
-        );
+        assert_eq!(serialized_set.len(), 140);
     }
 }

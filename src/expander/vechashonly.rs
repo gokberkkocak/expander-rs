@@ -51,7 +51,7 @@ mod tests {
 
     use std::collections::{hash_map::DefaultHasher, HashSet};
 
-    use ahash::{AHasher};
+    use ahash::AHasher;
     use fnv::{FnvHashSet, FnvHasher};
     use fxhash::{FxHashSet, FxHasher};
 

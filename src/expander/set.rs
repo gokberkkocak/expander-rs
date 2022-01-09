@@ -4,7 +4,7 @@ use ahash::AHashSet;
 use bitvec::prelude::BitVec;
 use fnv::FnvHashSet;
 use fxhash::FxHashSet;
-use serde::{Serialize, ser::SerializeSeq};
+use serde::{ser::SerializeSeq, Serialize};
 
 pub(crate) trait SetLike<T>
 where
@@ -40,18 +40,21 @@ impl_setlike!(FnvHashSet);
 impl_setlike!(AHashSet);
 
 #[derive(Default)]
-pub(crate) struct WrappedAHashSet<T : Eq + Hash>(AHashSet<T>);
+pub(crate) struct WrappedAHashSet<T: Eq + Hash>(AHashSet<T>);
 
 impl_setlike!(WrappedAHashSet);
 
-
 impl<T: Eq + Hash> std::ops::Deref for WrappedAHashSet<T> {
     type Target = AHashSet<T>;
-    fn deref(&self) -> &AHashSet<T> { &self.0 }
+    fn deref(&self) -> &AHashSet<T> {
+        &self.0
+    }
 }
 
 impl<T: Eq + Hash> std::ops::DerefMut for WrappedAHashSet<T> {
-    fn deref_mut(&mut self) -> &mut AHashSet<T> { &mut self.0 }
+    fn deref_mut(&mut self) -> &mut AHashSet<T> {
+        &mut self.0
+    }
 }
 
 impl<T: Eq + Hash> IntoIterator for WrappedAHashSet<T> {
@@ -65,7 +68,8 @@ impl<T: Eq + Hash> IntoIterator for WrappedAHashSet<T> {
 impl<T: Eq + Hash + Serialize> Serialize for WrappedAHashSet<T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer {
+        S: serde::Serializer,
+    {
         let mut seq = serializer.serialize_seq(Some(self.0.len()))?;
         for e in self.iter() {
             seq.serialize_element(&e)?;
@@ -79,25 +83,25 @@ pub(crate) struct WrappedBitVec(pub BitVec);
 impl Serialize for WrappedBitVec {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer {
-            let mut seq = serializer.serialize_seq(Some(self.0.len()))?;
-            for e in 0..self.0.len() {
-                if self.0[e] {
-                    seq.serialize_element(&e)?;
-                }
+        S: serde::Serializer,
+    {
+        let mut seq = serializer.serialize_seq(Some(self.0.len()))?;
+        for e in 0..self.0.len() {
+            if self.0[e] {
+                seq.serialize_element(&e)?;
             }
-            seq.end()
+        }
+        seq.end()
     }
 }
 
-pub(crate) trait SerializedLen : erased_serde::Serialize {
+pub(crate) trait SerializedLen: erased_serde::Serialize {
     fn ser_len(&self) -> usize;
 }
 
 macro_rules! impl_setlen {
     ($t:ident) => {
-        impl<T : Eq + Hash + Serialize> SerializedLen for $t<T>
-        {
+        impl<T: Eq + Hash + Serialize> SerializedLen for $t<T> {
             #[inline]
             fn ser_len(&self) -> usize {
                 self.len()
@@ -114,7 +118,8 @@ impl_setlen!(WrappedAHashSet);
 impl Serialize for dyn SerializedLen {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer {
-            erased_serde::serialize(self, serializer)
+        S: serde::Serializer,
+    {
+        erased_serde::serialize(self, serializer)
     }
 }

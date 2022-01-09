@@ -169,10 +169,7 @@ mod tests {
         ];
         let expanded_set = BitManipulatorExpander::<FnvHashSet<u128>>::expand(parsed_set);
         let serialized_set = serde_json::to_string(&expanded_set).unwrap();
-        assert_eq!(
-            serialized_set.len(),
-            35
-        );
+        assert_eq!(serialized_set.len(), 35);
     }
 
     #[test]
@@ -185,9 +182,6 @@ mod tests {
         ];
         let expanded_set = BitManipulatorExpander::<FnvHashSet<u128>>::expand(parsed_set);
         let serialized_set = serde_json::to_string(&expanded_set).unwrap();
-        assert_eq!(
-            serialized_set.len(),
-            349
-        );
+        assert_eq!(serialized_set.len(), 349);
     }
 }
