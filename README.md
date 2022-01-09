@@ -31,7 +31,7 @@ expander-rust 0.5.1
 Closed/Maximal Itemset Expander
 
 USAGE:
-    expander-rs [FLAGS] <input>
+    expander-rs [FLAGS] [OPTIONS] <input>
 
 FLAGS:
     -a, --aes-hasher            Use AHash for Hasher (uses AES)
@@ -46,8 +46,14 @@ FLAGS:
     -V, --version               Prints version information
     -v, --vec-expander          Use Vec expander (u8 for each item - up to 256 items)
 
+OPTIONS:
+    -o, --output <output>    Optional output file in JSON format Each Expander will serialize itemsets closer to their
+                             internal representation. Most human readable with BitVecExpander or VecExpander. Pretty
+                             much useless with Hash-only Expander
+
 ARGS:
     <input>    Input file in JSON format
+
 ```
 
 ## Examples
