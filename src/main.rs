@@ -131,12 +131,12 @@ pub fn read_file(filepath: &Path) -> Result<String> {
     Ok(contents)
 }
 
-fn write_to_file(contents: &[u8], filepath: &Path) {
-    let file = File::create(filepath).expect("Unable to create file");
+fn write_to_file(contents: &[u8], filepath: &Path) -> Result<()> {
+    let file = File::create(filepath)?;
     let mut buffered_writer = BufWriter::new(file);
     buffered_writer
-        .write_all(contents)
-        .expect("Unable to write to file");
+        .write_all(contents)?;
+    Ok(())
 }
 
 
@@ -148,7 +148,7 @@ fn main() -> Result<()> {
     println!("Total nb of item-sets: {}", boxed_set.ser_len());
     if let Some(output_path) = opt.output {
         let boxed_set_str = serde_json::to_string(&boxed_set)?;
-        write_to_file(boxed_set_str.as_bytes(), &output_path);
+        write_to_file(boxed_set_str.as_bytes(), &output_path)?;
     }
     Ok(())
 }
