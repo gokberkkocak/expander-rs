@@ -1,7 +1,6 @@
-use std::hash::{Hash, Hasher};
-
 use crate::expander::Expander;
 use crate::JsonSet;
+use std::hash::{Hash, Hasher};
 
 pub(crate) struct VecHashOnlyExpander<T, S> {
     _phantom_hash_set: std::marker::PhantomData<T>,

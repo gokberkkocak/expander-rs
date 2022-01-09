@@ -1,8 +1,6 @@
-use crate::{expander::Expander, JsonSet};
-
-use bitvec::vec::BitVec;
-
 use crate::expander::set::WrappedBitVec;
+use crate::{expander::Expander, JsonSet};
+use bitvec::vec::BitVec;
 
 fn convert_itemset(itemset: &[u8], nb_bits: usize) -> WrappedBitVec {
     let mut bv = BitVec::with_capacity(nb_bits);

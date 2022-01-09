@@ -1,20 +1,18 @@
 mod expander;
 
-use crate::expander::bitman::BitManipulatorExpander;
-use crate::expander::bitvec::BitVecExpander;
-use crate::expander::vec::VecExpander;
-use crate::expander::vechashonly::VecHashOnlyExpander;
-use crate::expander::Expander;
-
 use ahash::AHasher;
 use anyhow::Result;
+use expander::bitman::BitManipulatorExpander;
+use expander::bitvec::BitVecExpander;
 use expander::set::SerializedLen;
 use expander::set::WrappedAHashSet;
 use expander::set::WrappedBitVec;
+use expander::vec::VecExpander;
+use expander::vechashonly::VecHashOnlyExpander;
+use expander::Expander;
 use fnv::{FnvHashSet, FnvHasher};
 use fxhash::{FxHashSet, FxHasher};
 use serde::Deserialize;
-
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashSet;
 use std::fs::File;

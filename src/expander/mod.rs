@@ -4,11 +4,10 @@ pub(crate) mod set;
 pub(crate) mod vec;
 pub(crate) mod vechashonly;
 
+use crate::JsonSet;
+use set::SetLike;
 use std::hash::Hash;
 
-use crate::JsonSet;
-
-use self::set::SetLike;
 pub(crate) trait Expander
 where
     Self::HashType: Eq,

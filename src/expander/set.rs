@@ -1,10 +1,9 @@
-use std::{collections::HashSet, hash::Hash};
-
 use ahash::AHashSet;
 use bitvec::prelude::BitVec;
 use fnv::FnvHashSet;
 use fxhash::FxHashSet;
 use serde::{ser::SerializeSeq, Serialize};
+use std::{collections::HashSet, hash::Hash};
 
 pub(crate) trait SetLike<T>
 where
