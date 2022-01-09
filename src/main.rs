@@ -40,8 +40,8 @@ struct Opt {
     /// Input file in JSON format
     #[structopt(parse(from_os_str))]
     input: PathBuf,
-    /// Use Vec expander (u8 for each item - up to 256 items) with storing only hashes
-    /// (experimental feature which can cause collisions - use with care)
+    /// Use Hash-only Vec Expander (u8 for each item - up to 256 items) which operates only on hashes.
+    /// Experimental feature which can be additionally fast but also can cause collisions. Use with care.
     #[structopt(
         short = "o",
         long,
@@ -50,7 +50,7 @@ struct Opt {
         conflicts_with = "vec_expander"
     )]
     hash_only_expander: bool,
-    /// Use Vec expander (u8 for each item - up to 256 items)
+    /// Use Vec Expander (u8 for each item - up to 256 items).
     #[structopt(
         short = "v",
         long,
@@ -59,7 +59,7 @@ struct Opt {
         conflicts_with = "bit_man_expander"
     )]
     vec_expander: bool,
-    /// Use Bit Manipulator expander (u128 for itemset - up to 128 items)
+    /// Use Bit Manipulator Expander (u128 for itemset - up to 128 items).
     #[structopt(
         short = "m",
         long,
@@ -68,7 +68,7 @@ struct Opt {
         conflicts_with = "bit_vec_expander"
     )]
     bit_man_expander: bool,
-    /// Use Bit Vec expander (dynamic BitVec for itemset - no limits) (default)
+    /// Use Bit Vec Expander (dynamic BitVec for itemset - no limits) (default).
     #[structopt(
         short = "b",
         long,
@@ -77,7 +77,7 @@ struct Opt {
         conflicts_with = "hash_only_expander"
     )]
     bit_vec_expander: bool,
-    /// Use FNVHash for Hasher (default)
+    /// Use FNVHash for Hasher (default).
     #[structopt(
         short = "f",
         long,
@@ -86,7 +86,7 @@ struct Opt {
         conflicts_with = "std_hasher"
     )]
     fnv_hasher: bool,
-    /// Use FXHash for Hasher
+    /// Use FXHash for Hasher.
     #[structopt(
         short = "x",
         long,
@@ -95,7 +95,7 @@ struct Opt {
         conflicts_with = "std_hasher"
     )]
     fx_hasher: bool,
-    /// Use Rust's std Hasher (uses Google's SwissTable / HashBrown)
+    /// Use Rust's std Hasher (uses Google's SwissTable / HashBrown).
     #[structopt(
         short = "s",
         long,
@@ -104,7 +104,7 @@ struct Opt {
         conflicts_with = "aes_hasher"
     )]
     std_hasher: bool,
-    /// Use AHash for Hasher (uses AES)
+    /// Use AHash for Hasher (uses AES).
     #[structopt(
         short = "a",
         long,
@@ -115,8 +115,8 @@ struct Opt {
     aes_hasher: bool,
     /// Optional output file in JSON format.
     /// Each Expander will serialize itemsets closer to their internal representation.
-    /// Most human readable with BitVecExpander or VecExpander.
-    /// Pretty much useless with Hash-only Expander.
+    /// Most human readable with Bit Vec Expander or Vec Expander.
+    /// Pretty much useless with Hash-only Vec Expander.
     #[structopt(short = "o", long, parse(from_os_str))]
     output: Option<PathBuf>,
 }
