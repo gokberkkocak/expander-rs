@@ -113,7 +113,7 @@ struct Opt {
         conflicts_with = "std_hasher"
     )]
     aes_hasher: bool,
-    /// Optional output file in JSON format
+    /// Optional output file in JSON format.
     /// Each Expander will serialize itemsets closer to their internal representation.
     /// Most human readable with BitVecExpander or VecExpander.
     /// Pretty much useless with Hash-only Expander.

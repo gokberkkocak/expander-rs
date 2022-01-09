@@ -47,13 +47,12 @@ FLAGS:
     -v, --vec-expander          Use Vec expander (u8 for each item - up to 256 items)
 
 OPTIONS:
-    -o, --output <output>    Optional output file in JSON format Each Expander will serialize itemsets closer to their
+    -o, --output <output>    Optional output file in JSON format. Each Expander will serialize itemsets closer to their
                              internal representation. Most human readable with BitVecExpander or VecExpander. Pretty
                              much useless with Hash-only Expander
 
 ARGS:
     <input>    Input file in JSON format
-
 ```
 
 ## Examples
