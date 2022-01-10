@@ -56,14 +56,6 @@ impl<T: Eq + Hash> std::ops::DerefMut for WrappedAHashSet<T> {
     }
 }
 
-impl<T: Eq + Hash> IntoIterator for WrappedAHashSet<T> {
-    type Item = T;
-    type IntoIter = <AHashSet<T> as IntoIterator>::IntoIter;
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
-    }
-}
-
 impl<T: Eq + Hash + Serialize> Serialize for WrappedAHashSet<T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
