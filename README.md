@@ -27,7 +27,7 @@ cargo build --profile production
 There are 4 different expanding systems (default is bit-vec) and 4 different hashing algorithms (default is FNV). Use the flags to change the expander system and the hasher.  
 
 ```
-expander-rust 0.5.1
+expander-rust 0.6.0
 Closed/Maximal Itemset Expander
 
 USAGE:
