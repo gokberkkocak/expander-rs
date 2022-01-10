@@ -8,6 +8,8 @@ edition = "2021"
 anyhow = "1.0"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
+# for box dyn serialize
+erased-serde = "0.3"
 structopt = "0.3"
 # cheap hash for like vec<u8>
 fnv = "1.0"
@@ -15,8 +17,7 @@ fnv = "1.0"
 fxhash = "0.2"
 # aes hashing
 ahash = "0.7"
-# cheap alloc
-# heap security can be disabled since it's an internal program.
+# mimalloc - heap security can be disabled since it's an internal program.
 mimalloc = { version = "0.1", default-features = false, optional = true }
 # bitvec crate for efficient bitvec memory representation
 bitvec = "0.22"

@@ -1,24 +1,21 @@
-use std::hash::{Hash, Hasher};
-
 use crate::expander::Expander;
 use crate::JsonSet;
+use std::hash::{Hash, Hasher};
 
 pub(crate) struct VecHashOnlyExpander<T, S> {
     _phantom_hash_set: std::marker::PhantomData<T>,
     _phantom_hasher: std::marker::PhantomData<S>,
 }
 
-impl<T, S> Expander<T> for VecHashOnlyExpander<T, S>
+impl<T, S> Expander for VecHashOnlyExpander<T, S>
 where
     T: Default,
-    T: IntoIterator,
-    T::Item: Into<u64>,
     T: crate::expander::SetLike<u64>,
     S: Hasher,
     S: Default,
 {
     type SolutionType = Vec<u8>;
-
+    type SetType = T;
     type HashType = u64;
 
     fn expand(parsed_set: Vec<JsonSet>) -> T {
@@ -53,9 +50,11 @@ mod tests {
 
     use std::collections::{hash_map::DefaultHasher, HashSet};
 
-    use ahash::{AHashSet, AHasher};
+    use ahash::AHasher;
     use fnv::{FnvHashSet, FnvHasher};
     use fxhash::{FxHashSet, FxHasher};
+
+    use crate::expander::set::WrappedAHashSet;
 
     use super::*;
     #[test]
@@ -141,7 +140,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            VecHashOnlyExpander::<AHashSet<u64>, AHasher>::expand(parsed_set).len(),
+            VecHashOnlyExpander::<WrappedAHashSet<u64>, AHasher>::expand(parsed_set).len(),
             14
         );
     }
@@ -154,7 +153,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            VecHashOnlyExpander::<AHashSet<u64>, AHasher>::expand(parsed_set).len(),
+            VecHashOnlyExpander::<WrappedAHashSet<u64>, AHasher>::expand(parsed_set).len(),
             17
         );
     }

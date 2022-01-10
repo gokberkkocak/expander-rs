@@ -5,15 +5,13 @@ pub(crate) struct VecExpander<T> {
     _phantom: std::marker::PhantomData<T>,
 }
 
-impl<T> Expander<T> for VecExpander<T>
+impl<T> Expander for VecExpander<T>
 where
     T: Default,
-    T: IntoIterator,
-    T::Item: Into<Vec<u8>>,
     T: crate::expander::SetLike<Vec<u8>>,
 {
     type SolutionType = Vec<u8>;
-
+    type SetType = T;
     type HashType = Vec<u8>;
 
     fn expand(parsed_set: Vec<JsonSet>) -> T {
@@ -29,7 +27,7 @@ where
         if length > 1 {
             for i in 0..length {
                 let el = solution.remove(i);
-                if !final_set.set_contains(&solution) {
+                if !final_set.set_contains(solution) {
                     Self::expand_one_solution_to_lower_level(solution, final_set);
                 }
                 solution.insert(i, el);
@@ -44,9 +42,10 @@ mod tests {
 
     use std::collections::HashSet;
 
-    use ahash::AHashSet;
     use fnv::FnvHashSet;
     use fxhash::FxHashSet;
+
+    use crate::expander::set::WrappedAHashSet;
 
     use super::*;
     #[test]
@@ -132,7 +131,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            VecExpander::<AHashSet<Vec<u8>>>::expand(parsed_set).len(),
+            VecExpander::<WrappedAHashSet<Vec<u8>>>::expand(parsed_set).len(),
             14
         );
     }
@@ -145,8 +144,31 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            VecExpander::<AHashSet<Vec<u8>>>::expand(parsed_set).len(),
+            VecExpander::<WrappedAHashSet<Vec<u8>>>::expand(parsed_set).len(),
             17
         );
+    }
+    #[test]
+    fn test_1_serialize() {
+        let parsed_set = vec![
+            JsonSet { set: vec![1, 2, 3] },
+            JsonSet { set: vec![4, 5, 6] },
+        ];
+        let expanded_set = VecExpander::<FnvHashSet<Vec<u8>>>::expand(parsed_set);
+        let serialized_set = serde_json::to_string(&expanded_set).unwrap();
+        assert_eq!(serialized_set.len(), 77);
+    }
+
+    #[test]
+    fn test_2_serialize() {
+        let parsed_set = vec![
+            JsonSet {
+                set: vec![57, 58, 59, 60],
+            },
+            JsonSet { set: vec![60, 99] },
+        ];
+        let expanded_set = VecExpander::<FnvHashSet<Vec<u8>>>::expand(parsed_set);
+        let serialized_set = serde_json::to_string(&expanded_set).unwrap();
+        assert_eq!(serialized_set.len(), 140);
     }
 }

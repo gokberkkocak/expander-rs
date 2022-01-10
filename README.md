@@ -31,20 +31,27 @@ expander-rust 0.5.1
 Closed/Maximal Itemset Expander
 
 USAGE:
-    expander-rs [FLAGS] <input>
+    expander-rs [FLAGS] [OPTIONS] <input>
 
 FLAGS:
     -a, --aes-hasher            Use AHash for Hasher (uses AES)
-    -m, --bit-man-expander      Use Bit Manipulator expander (u128 for itemset - up to 128 items)
-    -b, --bit-vec-expander      Use Bit Vec expander (dynamic BitVec for itemset - no limits) (default)
+    -m, --bit-man-expander      Use Bit Manipulator Expander (u128 for itemset - up to 128 items)
+    -b, --bit-vec-expander      Use Bit Vec Expander (dynamic BitVec for itemset - no limits) (default)
     -f, --fnv-hasher            Use FNVHash for Hasher (default)
     -x, --fx-hasher             Use FXHash for Hasher
-    -o, --hash-only-expander    Use Vec expander (u8 for each item - up to 256 items) with storing only hashes
-                                (experimental feature which can cause collisions - use with care)
+    -o, --hash-only-expander    Use Hash-only Vec Expander (u8 for each item - up to 256 items) which operates only on
+                                hashes. Experimental feature which can be additionally fast but also can cause
+                                collisions. Use with care
     -h, --help                  Prints help information
     -s, --std-hasher            Use Rust's std Hasher (uses Google's SwissTable / HashBrown)
     -V, --version               Prints version information
-    -v, --vec-expander          Use Vec expander (u8 for each item - up to 256 items)
+    -v, --vec-expander          Use Vec Expander (u8 for each item - up to 256 items)
+
+OPTIONS:
+    -o, --output <output>    Optional output file in JSON format. Each Expander serializes itemsets differently; - Bit
+                             Vec Expander: Vec<usize> per itemset (Human-Readable), - Vec Expander: Vec<u8> per itemset
+                             (Human-Readable), - BitMan Expander: u128 per itemset, - Hash-only Vec Expander: u64 Hash
+                             per itemset (pretty much useless)
 
 ARGS:
     <input>    Input file in JSON format

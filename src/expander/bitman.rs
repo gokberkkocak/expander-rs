@@ -12,15 +12,13 @@ pub(crate) struct BitManipulatorExpander<T> {
     _phantom: std::marker::PhantomData<T>,
 }
 
-impl<T> Expander<T> for BitManipulatorExpander<T>
+impl<T> Expander for BitManipulatorExpander<T>
 where
     T: Default,
-    T: IntoIterator,
-    T::Item: Into<u128>,
     T: crate::expander::SetLike<u128>,
 {
     type SolutionType = u128;
-
+    type SetType = T;
     type HashType = u128;
 
     fn expand(parsed_set: Vec<JsonSet>) -> T {
@@ -56,9 +54,10 @@ mod tests {
 
     use std::collections::HashSet;
 
-    use ahash::AHashSet;
     use fnv::FnvHashSet;
     use fxhash::FxHashSet;
+
+    use crate::expander::set::WrappedAHashSet;
 
     use super::*;
     #[test]
@@ -144,7 +143,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            BitManipulatorExpander::<AHashSet<u128>>::expand(parsed_set).len(),
+            BitManipulatorExpander::<WrappedAHashSet<u128>>::expand(parsed_set).len(),
             14
         );
     }
@@ -157,8 +156,32 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            BitManipulatorExpander::<AHashSet<u128>>::expand(parsed_set).len(),
+            BitManipulatorExpander::<WrappedAHashSet<u128>>::expand(parsed_set).len(),
             17
         );
+    }
+
+    #[test]
+    fn test_1_serialize() {
+        let parsed_set = vec![
+            JsonSet { set: vec![1, 2, 3] },
+            JsonSet { set: vec![4, 5, 6] },
+        ];
+        let expanded_set = BitManipulatorExpander::<FnvHashSet<u128>>::expand(parsed_set);
+        let serialized_set = serde_json::to_string(&expanded_set).unwrap();
+        assert_eq!(serialized_set.len(), 35);
+    }
+
+    #[test]
+    fn test_2_serialize() {
+        let parsed_set = vec![
+            JsonSet {
+                set: vec![57, 58, 59, 60],
+            },
+            JsonSet { set: vec![60, 99] },
+        ];
+        let expanded_set = BitManipulatorExpander::<FnvHashSet<u128>>::expand(parsed_set);
+        let serialized_set = serde_json::to_string(&expanded_set).unwrap();
+        assert_eq!(serialized_set.len(), 349);
     }
 }

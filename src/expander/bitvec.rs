@@ -1,14 +1,14 @@
+use crate::expander::set::WrappedBitVec;
 use crate::{expander::Expander, JsonSet};
-
 use bitvec::vec::BitVec;
 
-fn convert_itemset(itemset: &[u8], nb_bits: usize) -> BitVec {
+fn convert_itemset(itemset: &[u8], nb_bits: usize) -> WrappedBitVec {
     let mut bv = BitVec::with_capacity(nb_bits);
     (0..nb_bits).for_each(|i| match itemset.iter().find(|&&x| x == i as u8) {
         Some(_) => bv.push(true),
         None => bv.push(false),
     });
-    bv
+    WrappedBitVec(bv)
 }
 
 fn get_number_of_required_bits(parsed_set: &[JsonSet]) -> usize {
@@ -24,16 +24,14 @@ pub(crate) struct BitVecExpander<T> {
     _phantom: std::marker::PhantomData<T>,
 }
 
-impl<T> Expander<T> for BitVecExpander<T>
+impl<T> Expander for BitVecExpander<T>
 where
     T: Default,
-    T: IntoIterator,
-    T::Item: Into<BitVec>,
-    T: crate::expander::SetLike<BitVec>,
+    T: crate::expander::SetLike<WrappedBitVec>,
 {
-    type SolutionType = BitVec;
-
-    type HashType = BitVec;
+    type SolutionType = WrappedBitVec;
+    type SetType = T;
+    type HashType = WrappedBitVec;
 
     fn expand(parsed_set: Vec<JsonSet>) -> T {
         let mut final_set = T::default();
@@ -49,15 +47,15 @@ where
     }
 
     fn expand_one_solution_to_lower_level(solution: &mut Self::SolutionType, final_set: &mut T) {
-        let ones_length = solution.iter().filter(|x| **x).count();
+        let ones_length = solution.0.iter().filter(|x| **x).count();
         if ones_length > 1 {
-            for i in 0..solution.len() {
-                if solution[i] {
-                    solution.set(i, false);
+            for i in 0..solution.0.len() {
+                if solution.0[i] {
+                    solution.0.set(i, false);
                     if !final_set.set_contains(solution) {
                         Self::expand_one_solution_to_lower_level(solution, final_set);
                     }
-                    solution.set(i, true);
+                    solution.0.set(i, true);
                 }
             }
         }
@@ -70,9 +68,10 @@ mod tests {
 
     use std::collections::HashSet;
 
-    use ahash::AHashSet;
     use fnv::FnvHashSet;
     use fxhash::FxHashSet;
+
+    use crate::expander::set::WrappedAHashSet;
 
     use super::*;
     #[test]
@@ -82,7 +81,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            BitVecExpander::<FnvHashSet<BitVec>>::expand(parsed_set).len(),
+            BitVecExpander::<FnvHashSet<WrappedBitVec>>::expand(parsed_set).len(),
             14
         );
     }
@@ -96,7 +95,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            BitVecExpander::<FnvHashSet<BitVec>>::expand(parsed_set).len(),
+            BitVecExpander::<FnvHashSet<WrappedBitVec>>::expand(parsed_set).len(),
             17
         );
     }
@@ -108,7 +107,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            BitVecExpander::<FxHashSet<BitVec>>::expand(parsed_set).len(),
+            BitVecExpander::<FxHashSet<WrappedBitVec>>::expand(parsed_set).len(),
             14
         );
     }
@@ -121,7 +120,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            BitVecExpander::<FxHashSet<BitVec>>::expand(parsed_set).len(),
+            BitVecExpander::<FxHashSet<WrappedBitVec>>::expand(parsed_set).len(),
             17
         );
     }
@@ -133,7 +132,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            BitVecExpander::<HashSet<BitVec>>::expand(parsed_set).len(),
+            BitVecExpander::<HashSet<WrappedBitVec>>::expand(parsed_set).len(),
             14
         );
     }
@@ -146,7 +145,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            BitVecExpander::<HashSet<BitVec>>::expand(parsed_set).len(),
+            BitVecExpander::<HashSet<WrappedBitVec>>::expand(parsed_set).len(),
             17
         );
     }
@@ -158,7 +157,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            BitVecExpander::<AHashSet<BitVec>>::expand(parsed_set).len(),
+            BitVecExpander::<WrappedAHashSet<WrappedBitVec>>::expand(parsed_set).len(),
             14
         );
     }
@@ -171,8 +170,32 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            BitVecExpander::<AHashSet<BitVec>>::expand(parsed_set).len(),
+            BitVecExpander::<WrappedAHashSet<WrappedBitVec>>::expand(parsed_set).len(),
             17
         );
+    }
+
+    #[test]
+    fn test_1_serialize() {
+        let parsed_set = vec![
+            JsonSet { set: vec![1, 2, 3] },
+            JsonSet { set: vec![4, 5, 6] },
+        ];
+        let expanded_set = BitVecExpander::<FnvHashSet<WrappedBitVec>>::expand(parsed_set);
+        let serialized_set = serde_json::to_string(&expanded_set).unwrap();
+        assert_eq!(serialized_set.len(), 77);
+    }
+
+    #[test]
+    fn test_2_serialize() {
+        let parsed_set = vec![
+            JsonSet {
+                set: vec![57, 58, 59, 60],
+            },
+            JsonSet { set: vec![60, 99] },
+        ];
+        let expanded_set = BitVecExpander::<FnvHashSet<WrappedBitVec>>::expand(parsed_set);
+        let serialized_set = serde_json::to_string(&expanded_set).unwrap();
+        assert_eq!(serialized_set.len(), 140);
     }
 }
