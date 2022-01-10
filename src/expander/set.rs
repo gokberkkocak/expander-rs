@@ -94,15 +94,15 @@ impl Serialize for WrappedBitVec {
     }
 }
 
-pub(crate) trait SerializedLen: erased_serde::Serialize {
-    fn ser_len(&self) -> usize;
+pub(crate) trait SerializedSetLen: erased_serde::Serialize {
+    fn set_len(&self) -> usize;
 }
 
 macro_rules! impl_setlen {
     ($t:ident) => {
-        impl<T: Eq + Hash + Serialize> SerializedLen for $t<T> {
+        impl<T: Eq + Hash + Serialize> SerializedSetLen for $t<T> {
             #[inline]
-            fn ser_len(&self) -> usize {
+            fn set_len(&self) -> usize {
                 self.len()
             }
         }
@@ -114,7 +114,7 @@ impl_setlen!(FxHashSet);
 impl_setlen!(FnvHashSet);
 impl_setlen!(WrappedAHashSet);
 
-impl Serialize for dyn SerializedLen {
+impl Serialize for dyn SerializedSetLen {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,

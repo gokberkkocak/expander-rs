@@ -48,13 +48,13 @@ FLAGS:
     -v, --vec-expander          Use Vec Expander (u8 for each item - up to 256 items)
 
 OPTIONS:
-    -o, --output <output>    Optional output file in JSON format. Each Expander will serialize itemsets closer to their
-                             internal representation. Most human readable with Bit Vec Expander or Vec Expander. Pretty
-                             much useless with Hash-only Vec Expander
+    -o, --output <output>    Optional output file in JSON format. Each Expander serializes itemsets differently; - Bit
+                             Vec Expander: Vec<usize> per itemset (Human-Readable), - Vec Expander: Vec<u8> per itemset
+                             (Human-Readable), - BitMan Expander: u128 per itemset, - Hash-only Vec Expander: u64 Hash
+                             per itemset (pretty much useless)
 
 ARGS:
     <input>    Input file in JSON format
-
 ```
 
 ## Examples
