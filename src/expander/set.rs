@@ -86,6 +86,24 @@ impl Serialize for WrappedBitVec {
     }
 }
 
+#[derive(Default, PartialEq, Eq, Hash, Clone, Copy)]
+pub(crate) struct Wrappedu128(pub u128);
+
+impl Serialize for Wrappedu128 {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut seq = serializer.serialize_seq(Some(self.0.count_ones() as usize))?;
+        for i in 0..u128::BITS {
+            if (self.0 & (1 << i)) >> i == 1 {
+                seq.serialize_element(&i)?;
+            }
+        }
+        seq.end()
+    }
+}
+
 pub(crate) trait SerializedSetLen: erased_serde::Serialize {
     fn set_len(&self) -> usize;
 }

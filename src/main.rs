@@ -7,6 +7,7 @@ use expander::bitvec::BitVecExpander;
 use expander::set::SerializedSetLen;
 use expander::set::WrappedAHashSet;
 use expander::set::WrappedBitVec;
+use expander::set::Wrappedu128;
 use expander::vec::VecExpander;
 use expander::vechashonly::VecHashOnlyExpander;
 use expander::Expander;
@@ -117,7 +118,7 @@ struct Opt {
     /// Each Expander serializes itemsets differently;
     /// - Bit Vec Expander: Vec<usize> per itemset (Human-Readable),
     /// - Vec Expander: Vec<u8> per itemset (Human-Readable),
-    /// - BitMan Expander: u128 per itemset,
+    /// - BitMan Expander: Vec<0..128> per itemset (Human-Readable),
     /// - Hash-only Vec Expander: u64 Hash per itemset (pretty much useless).
     #[structopt(short = "o", long, parse(from_os_str))]
     output: Option<PathBuf>,
@@ -226,16 +227,16 @@ fn work(opt: &Opt, parsed_set: Vec<JsonSet>) -> Box<dyn SerializedSetLen> {
             opt.aes_hasher,
         ) {
             (_, false, false, false) => Box::new(
-                BitManipulatorExpander::<FnvHashSet<u128>>::expand(parsed_set),
+                BitManipulatorExpander::<FnvHashSet<Wrappedu128>>::expand(parsed_set),
             ),
             (false, true, false, false) => Box::new(
-                BitManipulatorExpander::<FxHashSet<u128>>::expand(parsed_set),
+                BitManipulatorExpander::<FxHashSet<Wrappedu128>>::expand(parsed_set),
             ),
             (false, false, true, false) => {
-                Box::new(BitManipulatorExpander::<HashSet<u128>>::expand(parsed_set))
+                Box::new(BitManipulatorExpander::<HashSet<Wrappedu128>>::expand(parsed_set))
             }
             (false, false, false, true) => Box::new(
-                BitManipulatorExpander::<WrappedAHashSet<u128>>::expand(parsed_set),
+                BitManipulatorExpander::<WrappedAHashSet<Wrappedu128>>::expand(parsed_set),
             ),
             _ => unreachable!(),
         },

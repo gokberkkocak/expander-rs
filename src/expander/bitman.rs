@@ -1,11 +1,13 @@
 use crate::{expander::Expander, JsonSet};
 
-fn convert_itemset(sol: &[u8]) -> u128 {
+use super::set::Wrappedu128;
+
+fn convert_itemset(sol: &[u8]) -> Wrappedu128 {
     let mut sol_u128 = 0;
     for i in sol {
-        sol_u128 |= 1 << (i - 1);
+        sol_u128 |= 1 << i;
     }
-    sol_u128
+    Wrappedu128(sol_u128)
 }
 
 pub(crate) struct BitManipulatorExpander<T> {
@@ -15,11 +17,11 @@ pub(crate) struct BitManipulatorExpander<T> {
 impl<T> Expander for BitManipulatorExpander<T>
 where
     T: Default,
-    T: crate::expander::SetLike<u128>,
+    T: crate::expander::SetLike<Wrappedu128>,
 {
-    type SolutionType = u128;
+    type SolutionType = Wrappedu128;
     type SetType = T;
-    type HashType = u128;
+    type HashType = Wrappedu128;
 
     fn expand(parsed_set: Vec<JsonSet>) -> T {
         let mut final_set = T::default();
@@ -34,11 +36,11 @@ where
     }
 
     fn expand_one_solution_to_lower_level(solution: &mut Self::SolutionType, final_set: &mut T) {
-        let length = solution.count_ones();
+        let length = solution.0.count_ones();
         if length > 1 {
             for i in 0..u128::BITS {
-                if (*solution & (1 << i)) >> i == 1 {
-                    let mut new_sol = *solution ^ (1 << i);
+                if (solution.0 & (1 << i)) >> i == 1 {
+                    let mut new_sol = Wrappedu128(solution.0 ^ (1 << i));
                     if !final_set.set_contains(&new_sol) {
                         Self::expand_one_solution_to_lower_level(&mut new_sol, final_set);
                     }
@@ -67,7 +69,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            BitManipulatorExpander::<FnvHashSet<u128>>::expand(parsed_set).len(),
+            BitManipulatorExpander::<FnvHashSet<Wrappedu128>>::expand(parsed_set).len(),
             14
         );
     }
@@ -81,7 +83,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            BitManipulatorExpander::<FnvHashSet<u128>>::expand(parsed_set).len(),
+            BitManipulatorExpander::<FnvHashSet<Wrappedu128>>::expand(parsed_set).len(),
             17
         );
     }
@@ -93,7 +95,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            BitManipulatorExpander::<FxHashSet<u128>>::expand(parsed_set).len(),
+            BitManipulatorExpander::<FxHashSet<Wrappedu128>>::expand(parsed_set).len(),
             14
         );
     }
@@ -106,7 +108,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            BitManipulatorExpander::<FxHashSet<u128>>::expand(parsed_set).len(),
+            BitManipulatorExpander::<FxHashSet<Wrappedu128>>::expand(parsed_set).len(),
             17
         );
     }
@@ -118,7 +120,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            BitManipulatorExpander::<HashSet<u128>>::expand(parsed_set).len(),
+            BitManipulatorExpander::<HashSet<Wrappedu128>>::expand(parsed_set).len(),
             14
         );
     }
@@ -131,7 +133,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            BitManipulatorExpander::<HashSet<u128>>::expand(parsed_set).len(),
+            BitManipulatorExpander::<HashSet<Wrappedu128>>::expand(parsed_set).len(),
             17
         );
     }
@@ -143,7 +145,7 @@ mod tests {
             JsonSet { set: vec![4, 5, 6] },
         ];
         assert_eq!(
-            BitManipulatorExpander::<WrappedAHashSet<u128>>::expand(parsed_set).len(),
+            BitManipulatorExpander::<WrappedAHashSet<Wrappedu128>>::expand(parsed_set).len(),
             14
         );
     }
@@ -156,7 +158,7 @@ mod tests {
             JsonSet { set: vec![60, 99] },
         ];
         assert_eq!(
-            BitManipulatorExpander::<WrappedAHashSet<u128>>::expand(parsed_set).len(),
+            BitManipulatorExpander::<WrappedAHashSet<Wrappedu128>>::expand(parsed_set).len(),
             17
         );
     }
@@ -167,9 +169,9 @@ mod tests {
             JsonSet { set: vec![1, 2, 3] },
             JsonSet { set: vec![4, 5, 6] },
         ];
-        let expanded_set = BitManipulatorExpander::<FnvHashSet<u128>>::expand(parsed_set);
+        let expanded_set = BitManipulatorExpander::<FnvHashSet<Wrappedu128>>::expand(parsed_set);
         let serialized_set = serde_json::to_string(&expanded_set).unwrap();
-        assert_eq!(serialized_set.len(), 35);
+        assert_eq!(serialized_set.len(), 77);
     }
 
     #[test]
@@ -180,8 +182,8 @@ mod tests {
             },
             JsonSet { set: vec![60, 99] },
         ];
-        let expanded_set = BitManipulatorExpander::<FnvHashSet<u128>>::expand(parsed_set);
+        let expanded_set = BitManipulatorExpander::<FnvHashSet<Wrappedu128>>::expand(parsed_set);
         let serialized_set = serde_json::to_string(&expanded_set).unwrap();
-        assert_eq!(serialized_set.len(), 349);
+        assert_eq!(serialized_set.len(), 140);
     }
 }

@@ -50,8 +50,8 @@ FLAGS:
 OPTIONS:
     -o, --output <output>    Optional output file in JSON format. Each Expander serializes itemsets differently; - Bit
                              Vec Expander: Vec<usize> per itemset (Human-Readable), - Vec Expander: Vec<u8> per itemset
-                             (Human-Readable), - BitMan Expander: u128 per itemset, - Hash-only Vec Expander: u64 Hash
-                             per itemset (pretty much useless)
+                             (Human-Readable), - BitMan Expander: Vec<0..128> per itemset (Human-Readable), - Hash-only
+                             Vec Expander: u64 Hash per itemset (pretty much useless)
 
 ARGS:
     <input>    Input file in JSON format
