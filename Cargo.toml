@@ -20,7 +20,7 @@ ahash = "0.7"
 # mimalloc - heap security can be disabled since it's an internal program.
 mimalloc = { version = "0.1", default-features = false, optional = true }
 # bitvec crate for efficient bitvec memory representation
-bitvec = "0.22"
+bitvec = "1.0"
 
 [features]
 mim-alloc = ["mimalloc"]
